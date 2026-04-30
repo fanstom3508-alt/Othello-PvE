@@ -1,6 +1,34 @@
+# =========================
+# Cấu hình của IDE Eclipse
+# =========================
 .metadata/
 .settings/
 .classpath
 .project
 bin/
+.recommenders/
+
+# =========================
+# Môi trường Java
+# =========================
 *.class
+*.log
+# File log sinh ra khi Java bị crash
+hs_err_pid* # =========================
+# File rác của Hệ điều hành 
+# (Rất quan trọng khi làm nhóm)
+# =========================
+# MacOS sinh ra file này ở mỗi thư mục
+.DS_Store
+.AppleDouble
+.LSOverride
+# Windows sinh ra file này khi xem ảnh
+Thumbs.db
+ehthumbs.db
+
+# =========================
+# File đóng gói (Tùy chọn)
+# =========================
+*.jar
+*.war
+*.ear
