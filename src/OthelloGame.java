@@ -252,12 +252,12 @@ public class OthelloGame extends JFrame {
             turnTimer.stop();
         }
 
-        // 1. Đếm số quân mỗi bên
+        // UC-05 [1]: Đếm số quân mỗi bên
         int[] score = board.getScore();
         int blackScore = score[0];
         int whiteScore = score[1];
 
-        // 2. Xác định thắng/thua/hòa
+        // UC-05 [2]: Xác định thắng/thua/hòa
         String resultText;
         String resultTitle;
         // Người chơi là đen hay trắng tuỳ vào humanColor
@@ -284,7 +284,7 @@ public class OthelloGame extends JFrame {
             resultTitle = "Hòa!";
         }
 
-        // 3. Cập nhật status label
+        // UC-05 [3]: Cập nhật status label
         statusLabel.setText(String.format(
             "KẾT THÚC  |  Đen: %d    Trắng: %d", blackScore, whiteScore));
 
@@ -296,14 +296,14 @@ public class OthelloGame extends JFrame {
             }
         }
 
-        // 4. Lưu điểm của Player
+        // UC-05 [4]: Lưu điểm của Player
         boolean isTopScore = HighScoreManager.addScore(playerName, playerScore);
 
-        // 5. Hiển thị dialog kết quả với tùy chọn
+        // UC-05 [5]: Hiển thị dialog kết quả với tùy chọn
         showEndGameDialog(resultTitle, resultText, blackScore, whiteScore, playerScore, isTopScore);
     }
 
-    // UC-05: Xử lý kết thúc do hết giờ
+    // UC-05 [A1]: Xử lý kết thúc do hết giờ
     private void endGameByTime(int winner) {
         if (gameEnded) return;
         gameEnded = true;
