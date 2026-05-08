@@ -6,7 +6,7 @@ public class MainMenu extends JFrame {
 
     public MainMenu() {
         setTitle("Cờ Othello");
-        setSize(520, 620);
+        setSize(520, 700);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setResizable(false);
@@ -31,15 +31,15 @@ public class MainMenu extends JFrame {
 
             // TODO (UC-01): Trước khi startGame() cần mở màn hình nhập tên
 
-            // TODO (UC-06): Uncomment khi implement xong Leaderboard
-            // btnLeaderboard = createStyledButton("🏆  Bảng xếp hạng", new Color(33, 109, 185), new Color(24, 85, 150));
-            // btnLeaderboard.setBounds(110, 440, 300, 65);
-            // btnLeaderboard.addActionListener(e -> openLeaderboard());
-            // add(btnLeaderboard);
+            // UC-06: Nút xem bảng xếp hạng
+            btnLeaderboard = createStyledButton("🏆  Bảng xếp hạng", new Color(33, 109, 185), new Color(24, 85, 150));
+            btnLeaderboard.setBounds(110, 440, 300, 65);
+            btnLeaderboard.addActionListener(e -> openLeaderboard());
+            add(btnLeaderboard);
             
             
             btnHowTo = createStyledButton("?  Cách chơi", new Color(33, 109, 185), new Color(24, 85, 150));
-            btnHowTo.setBounds(110, 440, 300, 65);
+            btnHowTo.setBounds(110, 520, 300, 65);
             btnHowTo.addActionListener(e -> openHowToPlay());
             add(btnHowTo);
         }
@@ -156,8 +156,10 @@ public class MainMenu extends JFrame {
         SwingUtilities.invokeLater(() -> new OthelloGame().setVisible(true));
     }
 
-    // TODO (UC-06): Implement mở màn hình Leaderboard
-    // private void openLeaderboard() { ... }
+    // UC-06: Mở màn hình Leaderboard
+    private void openLeaderboard() {
+        new LeaderboardDialog(this, null).setVisible(true);
+    }
 
     // UC -03: Mở cách chơi
     private void openHowToPlay() {
