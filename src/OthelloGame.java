@@ -178,7 +178,10 @@ public class OthelloGame extends JFrame {
     // Hàm cập nhật lại bảng (hiển thị quân + highlight ô hợp lệ)
     private void updateBoard() {
     	// UC-05 bổ sung thêm
-        if (board.isGameOver()) {
+    	// Chỉ kiểm tra kết thúc nếu game đã thực sự bắt đầu (có nhiều hơn 4 quân ban đầu)
+    	int[] currentScore = board.getScore();
+    	int totalPieces = currentScore[0] + currentScore[1];
+        if (totalPieces > 4 && board.isGameOver()) {
         	endGame();
         	return;
         }
@@ -254,22 +257,22 @@ public class OthelloGame extends JFrame {
 
         if (blackScore > whiteScore) {
             if (blackPlayer instanceof HumanPlayer) {
-                resultText = "\uD83C\uDF89 Chúc mừng! Bạn đã THẮNG!";
+                resultText = "Chúc mừng! Bạn đã THẮNG!";
                 resultTitle = "Chiến thắng!";
             } else {
-                resultText = "\uD83D\uDE1E Bạn đã THUA!";
+                resultText = "Bạn đã THUA!";
                 resultTitle = "Thất bại!";
             }
         } else if (whiteScore > blackScore) {
             if (whitePlayer instanceof HumanPlayer) {
-                resultText = "\uD83C\uDF89 Chúc mừng! Bạn đã THẮNG!";
+                resultText = "Chúc mừng! Bạn đã THẮNG!";
                 resultTitle = "Chiến thắng!";
             } else {
-                resultText = "\uD83D\uDE1E Bạn đã THUA!";
+                resultText = "Bạn đã THUA!";
                 resultTitle = "Thất bại!";
             }
         } else {
-            resultText = "\uD83E\uDD1D Trận đấu HÒA!";
+            resultText = "Trận đấu HÒA!";
             resultTitle = "Hòa!";
         }
 
@@ -312,19 +315,19 @@ public class OthelloGame extends JFrame {
         if (blackPlayer instanceof HumanPlayer) {
             playerScore = blackScore;
             if (winner == Board.BLACK) {
-                resultText = "\u23F0 Đối thủ hết giờ! Bạn THẮNG!";
+                resultText = "Đối thủ hết giờ! Bạn THẮNG!";
                 resultTitle = "Chiến thắng!";
             } else {
-                resultText = "\u23F0 Bạn đã hết giờ! Bạn THUA!";
+                resultText = "Bạn đã hết giờ! Bạn THUA!";
                 resultTitle = "Hết giờ!";
             }
         } else {
             playerScore = whiteScore;
             if (winner == Board.WHITE) {
-                resultText = "\u23F0 Đối thủ hết giờ! Bạn THẮNG!";
+                resultText = "Đối thủ hết giờ! Bạn THẮNG!";
                 resultTitle = "Chiến thắng!";
             } else {
-                resultText = "\u23F0 Bạn đã hết giờ! Bạn THUA!";
+                resultText = "Bạn đã hết giờ! Bạn THUA!";
                 resultTitle = "Hết giờ!";
             }
         }
@@ -349,7 +352,7 @@ public class OthelloGame extends JFrame {
             int blackScore, int whiteScore, int playerScore, boolean isTopScore) {
 
         JDialog dialog = new JDialog(this, title, true);
-        dialog.setSize(400, 340);
+        dialog.setSize(500, 420);
         dialog.setLocationRelativeTo(this);
         dialog.setResizable(false);
         dialog.setLayout(new BorderLayout());
@@ -390,7 +393,7 @@ public class OthelloGame extends JFrame {
         // Thông báo nếu lọt top
         if (isTopScore) {
             resultPanel.add(Box.createVerticalStrut(8));
-            JLabel topLabel = new JLabel("\u2B50 Bạn đã lọt vào bảng xếp hạng!", SwingConstants.CENTER);
+            JLabel topLabel = new JLabel("(*) Bạn đã lọt vào bảng xếp hạng!", SwingConstants.CENTER);
             topLabel.setFont(new Font("Arial", Font.BOLD, 15));
             topLabel.setForeground(new Color(255, 200, 50));
             topLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -405,7 +408,7 @@ public class OthelloGame extends JFrame {
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 15, 0));
 
         // UC-08: Nút Chơi lại
-        JButton restartBtn = createDialogButton("\uD83D\uDD04  Chơi lại", new Color(46, 160, 67));
+        JButton restartBtn = createDialogButton("Chơi lại", new Color(46, 160, 67));
         restartBtn.addActionListener(e -> {
             dialog.dispose();
             gameEnded = false;
@@ -414,14 +417,14 @@ public class OthelloGame extends JFrame {
         buttonPanel.add(restartBtn);
 
         // UC-06: Nút Xem bảng xếp hạng
-        JButton leaderboardBtn = createDialogButton("\uD83C\uDFC6  Xếp hạng", new Color(33, 109, 185));
+        JButton leaderboardBtn = createDialogButton("Xếp hạng", new Color(33, 109, 185));
         leaderboardBtn.addActionListener(e -> {
             new LeaderboardDialog(dialog, playerName).setVisible(true);
         });
         buttonPanel.add(leaderboardBtn);
 
         // Nút Về menu
-        JButton menuBtn = createDialogButton("\uD83C\uDFE0  Menu", new Color(120, 60, 20));
+        JButton menuBtn = createDialogButton("Menu", new Color(120, 60, 20));
         menuBtn.addActionListener(e -> {
             dialog.dispose();
             dispose(); // Đóng game, windowClosed sẽ mở lại MainMenu

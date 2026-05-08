@@ -27,7 +27,7 @@ public class LeaderboardDialog extends JDialog {
         headerPanel.setPreferredSize(new Dimension(520, 70));
         headerPanel.setLayout(new BorderLayout());
 
-        JLabel titleLabel = new JLabel("\uD83C\uDFC6  TOP 10 ĐIỂM CAO", SwingConstants.CENTER);
+        JLabel titleLabel = new JLabel("TOP 10 DIEM CAO", SwingConstants.CENTER);
         titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
         titleLabel.setForeground(new Color(255, 220, 50));
         headerPanel.add(titleLabel, BorderLayout.CENTER);
