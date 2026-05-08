@@ -21,9 +21,17 @@ public class HighScoreManager {
             this.date = date;
         }
 
-        public String getPlayerName() { return playerName; }
-        public int getScore() { return score; }
-        public Date getDate() { return date; }
+        public String getPlayerName() {
+            return playerName;
+        }
+
+        public int getScore() {
+            return score;
+        }
+
+        public Date getDate() {
+            return date;
+        }
 
         // Sắp xếp: điểm giảm dần, nếu trùng điểm thì ai đạt trước xếp trên
         @Override
@@ -47,7 +55,8 @@ public class HighScoreManager {
             String line;
             while ((line = reader.readLine()) != null) {
                 line = line.trim();
-                if (line.isEmpty()) continue;
+                if (line.isEmpty())
+                    continue;
                 String[] parts = line.split("\\|");
                 if (parts.length == 3) {
                     String name = parts[0].trim();
@@ -82,25 +91,36 @@ public class HighScoreManager {
         }
     }
 
-    // UC-05: Thêm điểm mới vào bảng — chỉ lưu nếu lọt top 10
+    // UC-05 [4]: Thêm điểm mới — mỗi tên chỉ lưu 1 bản ghi, cập nhật nếu điểm cao hơn (BRule-09)
     public static boolean addScore(String playerName, int score) {
         List<ScoreEntry> scores = loadScores();
+
+        ScoreEntry existing = null;
+        for (ScoreEntry entry : scores) {
+            if (entry.getPlayerName().equals(playerName)) {
+                existing = entry;
+                break;
+            }
+        }
+
+        if (existing != null) {
+            if (score <= existing.getScore()) return false;
+            scores.remove(existing);
+        }
+
         ScoreEntry newEntry = new ScoreEntry(playerName, score, new Date());
         scores.add(newEntry);
         Collections.sort(scores);
 
-        // Chỉ giữ top 10
         while (scores.size() > MAX_ENTRIES) {
             scores.remove(scores.size() - 1);
         }
 
         saveScores(scores);
-
-        // Trả true nếu điểm mới nằm trong top 10
         return scores.contains(newEntry);
     }
 
-    // UC-06: Lấy top 10 điểm cao
+    // UC-06 [2][3]: Đọc dữ liệu từ file và trả về top 10 đã sắp xếp giảm dần
     public static List<ScoreEntry> getTopScores() {
         List<ScoreEntry> scores = loadScores();
         // Giới hạn 10
