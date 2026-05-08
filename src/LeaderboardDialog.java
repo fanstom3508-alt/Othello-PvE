@@ -33,17 +33,18 @@ public class LeaderboardDialog extends JDialog {
         headerPanel.add(titleLabel, BorderLayout.CENTER);
         add(headerPanel, BorderLayout.NORTH);
 
-        // ---- Lấy dữ liệu ----
+        // UC-06 [2]: Đọc dữ liệu từ file lưu trữ cục bộ
         List<HighScoreManager.ScoreEntry> scores = HighScoreManager.getTopScores();
 
         if (scores.isEmpty()) {
-            // A1: Chưa có dữ liệu → hiển thị thông báo
+            // UC-06 [A1]: Chưa có dữ liệu → hiển thị thông báo
             JLabel emptyLabel = new JLabel("No high scores available", SwingConstants.CENTER);
             emptyLabel.setFont(new Font("Arial", Font.ITALIC, 18));
             emptyLabel.setForeground(Color.GRAY);
             add(emptyLabel, BorderLayout.CENTER);
         } else {
-            // ---- Bảng điểm ----
+            // UC-06 [3]: Sắp xếp giảm dần (xử lý trong HighScoreManager.getTopScores)
+            // UC-06 [4]: Hiển thị top 10 dạng bảng
             String[] columnNames = {"Hạng", "Tên người chơi", "Điểm", "Ngày đạt được"};
             Object[][] data = new Object[scores.size()][4];
 
@@ -84,7 +85,7 @@ public class LeaderboardDialog extends JDialog {
             table.getColumnModel().getColumn(2).setPreferredWidth(70);
             table.getColumnModel().getColumn(3).setPreferredWidth(150);
 
-            // UC-06: Highlight dòng của người chơi hiện tại
+            // UC-06 [5]: Highlight dòng của người chơi hiện tại
             table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
                 @Override
                 public Component getTableCellRendererComponent(JTable table, Object value,
