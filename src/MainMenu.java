@@ -1,5 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.*;
+import java.awt.geom.*;
 import java.net.URI;
 
 public class MainMenu extends JFrame {
@@ -127,6 +129,8 @@ public class MainMenu extends JFrame {
                     // Shadow
                     g2.setColor(bg);
                     g2.fillRoundRect(0, 0, getWidth(), getHeight(), 18, 18);
+                    g2.setColor(bg);
+                    g2.fillRoundRect(0, 0, getWidth(), getHeight(), 18, 18);
                     
                     // Text
                     g2.setColor(Color.WHITE);
@@ -150,15 +154,62 @@ public class MainMenu extends JFrame {
 
     // UC-03: Mở màn hình game
     private void startGame() {
-// TODO (UC-01): Gọi màn hình hoặc hộp thoại nhập tên trước
-        
-        // TODO (UC-02): Gọi màn hình chọn màu (ví dụ: dùng JOptionPane hoặc tạo JPanel mới)
-        // Hiện tại gán mặc định là Board.BLACK để game chạy được, 
-        // người làm UC-02 sau này chỉ cần thay biến chosenColor này bằng kết quả người dùng chọn.
-        int chosenColor = Board.BLACK; 
+        // TODO (UC-01): Gọi màn hình nhập tên trước, truyền tên vào OthelloGame
+    	String playerName;
+
+        while (true) {
+            playerName = JOptionPane.showInputDialog(
+                    this,
+                    "Nhập tên hiển thị (1-20 ký tự):",
+                    "UC-01 - Enter display name",
+                    JOptionPane.PLAIN_MESSAGE
+            );
+
+            if (playerName == null) return;
+
+            playerName = playerName.trim();
+
+            if (playerName.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Tên không được để trống.");
+                continue;
+            }
+
+            if (playerName.length() > 20) {
+                JOptionPane.showMessageDialog(this, "Tên tối đa 20 ký tự.");
+                continue;
+            }
+
+            break;
+        }
+        // TODO (UC-02): Gọi màn hình chọn màu trước, truyền màu vào OthelloGame
+        int colorChoice = JOptionPane.showOptionDialog(
+                this,
+                "Chọn màu quân cờ:",
+                "UC-02 - Choose color",
+                JOptionPane.DEFAULT_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                new String[]{"Đen (BLACK)", "Trắng (WHITE)"},
+                "Đen (BLACK)"
+        );
+
+        if (colorChoice == -1) {
+            return; // FIX UC-02 cancel
+        }
+
+        int playerColor;
+
+        if (colorChoice == 1) {
+            playerColor = Board.WHITE;
+        } else {
+            playerColor = Board.BLACK;
+        }
+
+        GameSession.setPlayerName(playerName);
+        GameSession.setPlayerColor(playerColor);
 
         dispose();
-        SwingUtilities.invokeLater(() -> new OthelloGame(chosenColor).setVisible(true));
+        SwingUtilities.invokeLater(() -> new OthelloGame(playerColor).setVisible(true));
     }
 
     // TODO (UC-06): Implement mở màn hình Leaderboard
