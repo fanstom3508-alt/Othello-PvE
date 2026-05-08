@@ -32,7 +32,7 @@ public class MainMenu extends JFrame {
             // TODO (UC-01): Trước khi startGame() cần mở màn hình nhập tên
 
             // UC-06: Nút xem bảng xếp hạng
-            btnLeaderboard = createStyledButton("🏆  Bảng xếp hạng", new Color(33, 109, 185), new Color(24, 85, 150));
+            btnLeaderboard = createStyledButton("Bảng xếp hạng", new Color(33, 109, 185), new Color(24, 85, 150));
             btnLeaderboard.setBounds(110, 440, 300, 65);
             btnLeaderboard.addActionListener(e -> openLeaderboard());
             add(btnLeaderboard);
