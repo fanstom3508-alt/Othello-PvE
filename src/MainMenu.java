@@ -150,10 +150,15 @@ public class MainMenu extends JFrame {
 
     // UC-03: Mở màn hình game
     private void startGame() {
-        // TODO (UC-01): Gọi màn hình nhập tên trước, truyền tên vào OthelloGame
-        // TODO (UC-02): Gọi màn hình chọn màu trước, truyền màu vào OthelloGame
+// TODO (UC-01): Gọi màn hình hoặc hộp thoại nhập tên trước
+        
+        // TODO (UC-02): Gọi màn hình chọn màu (ví dụ: dùng JOptionPane hoặc tạo JPanel mới)
+        // Hiện tại gán mặc định là Board.BLACK để game chạy được, 
+        // người làm UC-02 sau này chỉ cần thay biến chosenColor này bằng kết quả người dùng chọn.
+        int chosenColor = Board.BLACK; 
+
         dispose();
-        SwingUtilities.invokeLater(() -> new OthelloGame().setVisible(true));
+        SwingUtilities.invokeLater(() -> new OthelloGame(chosenColor).setVisible(true));
     }
 
     // TODO (UC-06): Implement mở màn hình Leaderboard

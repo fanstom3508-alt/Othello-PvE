@@ -5,8 +5,10 @@ import java.util.List;
 
 public class OthelloGame extends JFrame {
     private Board board;
-    private Player blackPlayer;
-    private Player whitePlayer;
+    private Player humanPlayer;
+    private Player computerPlayer;
+    private int humanColor;
+    
     private OthelloCell[][] cells;
     private JPanel boardPanel;
     private JLabel statusLabel, timeBlackLabel, timeWhiteLabel;
@@ -17,18 +19,21 @@ public class OthelloGame extends JFrame {
     private int lastMoveRow = -1, lastMoveCol = -1, lastMoveFlipped = 0;
     private int lastMovePlayer = -1;
 
-    public OthelloGame() {
+    public OthelloGame(int chosenHumanColor) {
         board = new Board();
         setTitle("Cờ Othello - Người vs Máy");
         setSize(650, 750);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // đóng game thì trở về menu
         setLayout(new BorderLayout());
         setLocationRelativeTo(null);
+        
+        // khởi tạo người và máy dựa trên màu truyền vô
+        this.humanColor = chosenHumanColor;
+        int computerColor = (humanColor == Board.BLACK) ? Board.WHITE : Board.BLACK;
 
-        // Người chơi luôn là Đen, Máy luôn là Trắng
         // TODO (UC-02): Thay bằng màu do người chơi chọn
-        blackPlayer = new HumanPlayer(Board.BLACK);
-        whitePlayer = new ComputerPlayer(Board.WHITE);
+        humanPlayer = new HumanPlayer(humanColor);
+        computerPlayer = new ComputerPlayer(computerColor);
 
         createMenu();
         createStatusPanel();
@@ -42,6 +47,13 @@ public class OthelloGame extends JFrame {
                 SwingUtilities.invokeLater(() -> new MainMenu().setVisible(true));
             }
         });
+    }
+    private String getPlayerName(int color) {
+        if (color == humanColor) {
+            return (color == Board.BLACK) ? "Đen (Bạn)" : "Trắng (Bạn)";
+        } else {
+            return (color == Board.BLACK) ? "Đen (Máy)" : "Trắng (Máy)";
+        }
     }
     
     // Hàm mô tả thành phần menu bar
@@ -117,12 +129,12 @@ public class OthelloGame extends JFrame {
         statusPanel.setBorder(BorderFactory.createEmptyBorder(8, 10, 8, 10));
 
         // Dòng 1: lượt + điểm
-        statusLabel = new JLabel("Lượt đi: Đen (Bạn)", SwingConstants.CENTER);
+        statusLabel = new JLabel("Lượt đi: " + getPlayerName(Board.BLACK), SwingConstants.CENTER);
         statusLabel.setFont(new Font("Arial", Font.BOLD, 20));
 
         // Dòng 2: đồng hồ
-        timeBlackLabel = new JLabel("Đen (Bạn): 20:00");
-        timeWhiteLabel = new JLabel("Trắng (Máy): 20:00");
+        timeBlackLabel = new JLabel(getPlayerName(Board.BLACK) + ": 20:00");
+        timeWhiteLabel = new JLabel(getPlayerName(Board.WHITE) + ": 20:00");
         timeBlackLabel.setFont(new Font("Arial", Font.BOLD, 18));
         timeWhiteLabel.setFont(new Font("Arial", Font.BOLD, 18));
 
@@ -153,11 +165,11 @@ public class OthelloGame extends JFrame {
         int current = board.getCurrentPlayer();
         if (current == Board.BLACK) {
             timeLeftBlack = Math.max(0, timeLeftBlack - 1000);
-            timeBlackLabel.setText("Đen (Bạn): " + formatTime(timeLeftBlack));
+            timeBlackLabel.setText(getPlayerName(Board.BLACK) + ": " + formatTime(timeLeftBlack));
             if (timeLeftBlack <= 0) {} // UC-05
         } else {
             timeLeftWhite = Math.max(0, timeLeftWhite - 1000);
-            timeWhiteLabel.setText("Trắng (Máy): " + formatTime(timeLeftWhite));
+            timeWhiteLabel.setText(getPlayerName(Board.WHITE) + ": " + formatTime(timeLeftWhite));
             if (timeLeftWhite <= 0) {} // UC-05
         }
     }
@@ -171,16 +183,13 @@ public class OthelloGame extends JFrame {
     // Hàm cập nhật lại bảng (hiển thị quân + highlight ô hợp lệ)
     private void updateBoard() {
     	// UC-05 bổ sung thêm
-        if (board.isGameOver()) {
-        	endGame();
-        	return;
-        }
+    	
         int current = board.getCurrentPlayer();
         int[] score = board.getScore();
-        String turnLabel = (current == Board.BLACK) ? "Đen (Bạn)" : "Trắng (Máy)";
+        String turnLabel = getPlayerName(current);
         statusLabel.setText(String.format(
-            "Lượt: %s    |    Đen: %d    Trắng: %d",
-            turnLabel, score[0], score[1]));
+                "Lượt: %s    |    %s: %d    %s: %d",
+                turnLabel, getPlayerName(Board.BLACK), score[0], getPlayerName(Board.WHITE), score[1]));
 
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
@@ -215,7 +224,7 @@ public class OthelloGame extends JFrame {
         }
         char colChar = (char)('A' + lastMoveCol);
         int rowNum = lastMoveRow + 1;
-        String who = (lastMovePlayer == Board.BLACK) ? "Đen (Bạn)" : "Trắng (Máy)";
+        String who = getPlayerName(lastMovePlayer);
         lastMoveLabel.setText(String.format("Nước vừa đi: %s đặt tại %c%d", who, colChar, rowNum));
         flippedLabel.setText(String.format("Số quân ăn được: %d", lastMoveFlipped));
     }
