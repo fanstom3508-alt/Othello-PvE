@@ -128,9 +128,7 @@ public class OthelloGame extends JFrame {
                     @Override
                     // UC-04
                     public void mouseClicked(MouseEvent e) {
-
                         handleMove(row, col);
-
                     }
                 });
                 cells[i][j] = cell;
@@ -210,7 +208,6 @@ public class OthelloGame extends JFrame {
         	return;
         }
         int current = board.getCurrentPlayer();
-
         int[] score = board.getScore();
         String turnLabel = getPlayerName(current);
         statusLabel.setText(String.format(
@@ -329,236 +326,6 @@ public class OthelloGame extends JFrame {
         }
 
         // UC-05 [1]: Đếm số quân mỗi bên
-
-
-        int[] score = board.getScore();
-        int blackScore = score[0];
-        int whiteScore = score[1];
-
-        // UC-05 [2]: Xác định thắng/thua/hòa
-        String resultText;
-        String resultTitle;
-        // Người chơi là đen hay trắng tuỳ vào humanColor
-        int playerScore = (humanColor == Board.BLACK) ? blackScore : whiteScore;
-
-        if (blackScore > whiteScore) {
-            if (humanColor == Board.BLACK) {
-                resultText = "Chúc mừng! Bạn đã THẮNG!";
-                resultTitle = "Chiến thắng!";
-            } else {
-                resultText = "Bạn đã THUA!";
-                resultTitle = "Thất bại!";
-            }
-        } else if (whiteScore > blackScore) {
-            if (humanColor == Board.WHITE) {
-                resultText = "Chúc mừng! Bạn đã THẮNG!";
-                resultTitle = "Chiến thắng!";
-            } else {
-                resultText = "Bạn đã THUA!";
-                resultTitle = "Thất bại!";
-            }
-        } else {
-            resultText = "Trận đấu HÒA!";
-            resultTitle = "Hòa!";
-        }
-
-
-        // UC-05 [3]: Cập nhật status label
-        statusLabel.setText(String.format(
-            "KẾT THÚC  |  Đen: %d    Trắng: %d", blackScore, whiteScore));
-
-        // Xóa highlight nước đi hợp lệ
-
-
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                int val = board.getCell(i, j);
-                cells[i][j].setState(val != Board.EMPTY ? val : OthelloCell.EMPTY);
-            }
-        }
-
-
-        // UC-05 [4]: Lưu điểm của Player
-        boolean isTopScore = HighScoreManager.addScore(playerName, playerScore);
-
-        // UC-05 [5]: Hiển thị dialog kết quả với tùy chọn
-        showEndGameDialog(resultTitle, resultText, blackScore, whiteScore, playerScore, isTopScore);
-    }
-
-    // UC-05 [A1]: Xử lý kết thúc do hết giờ
-    private void endGameByTime(int winner) {
-        if (gameEnded) return;
-        gameEnded = true;
-
-        if (turnTimer != null && turnTimer.isRunning()) {
-            turnTimer.stop();
-        }
-
-    // UC-04: Thực hiện nước đi  (placeholder — do người làm UC-04 implement)
-
-
-        int[] score = board.getScore();
-        int blackScore = score[0];
-        int whiteScore = score[1];
-
-        String resultText;
-        String resultTitle;
-        int playerScore;
-
-        if (humanColor == Board.BLACK) {
-            playerScore = blackScore;
-            if (winner == Board.BLACK) {
-                resultText = "Đối thủ hết giờ! Bạn THẮNG!";
-                resultTitle = "Chiến thắng!";
-            } else {
-                resultText = "Bạn đã hết giờ! Bạn THUA!";
-                resultTitle = "Hết giờ!";
-            }
-        } else {
-            playerScore = whiteScore;
-            if (winner == Board.WHITE) {
-                resultText = "Đối thủ hết giờ! Bạn THẮNG!";
-                resultTitle = "Chiến thắng!";
-            } else {
-                resultText = "Bạn đã hết giờ! Bạn THUA!";
-                resultTitle = "Hết giờ!";
-            }
-        }
-
-        statusLabel.setText(String.format(
-            "HẾT GIỜ  |  Đen: %d    Trắng: %d", blackScore, whiteScore));
-
-        // Xóa highlight
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                int val = board.getCell(i, j);
-                cells[i][j].setState(val != Board.EMPTY ? val : OthelloCell.EMPTY);
-            }
-        }
-
-        boolean isTopScore = HighScoreManager.addScore(playerName, playerScore);
-        showEndGameDialog(resultTitle, resultText, blackScore, whiteScore, playerScore, isTopScore);
-    }
-
-
-    // UC-05: Dialog hiển thị kết quả với các tùy chọn
-    private void showEndGameDialog(String title, String resultText,
-            int blackScore, int whiteScore, int playerScore, boolean isTopScore) {
-
-        JDialog dialog = new JDialog(this, title, true);
-        dialog.setSize(500, 420);
-        dialog.setLocationRelativeTo(this);
-        dialog.setResizable(false);
-        dialog.setLayout(new BorderLayout());
-
-        // Panel kết quả
-        JPanel resultPanel = new JPanel();
-        resultPanel.setLayout(new BoxLayout(resultPanel, BoxLayout.Y_AXIS));
-        resultPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 10, 20));
-        resultPanel.setBackground(new Color(30, 60, 15));
-
-        // Dòng kết quả chính
-        JLabel resultLabel = new JLabel(resultText, SwingConstants.CENTER);
-        resultLabel.setFont(new Font("Arial", Font.BOLD, 22));
-        resultLabel.setForeground(new Color(255, 220, 50));
-        resultLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        resultPanel.add(resultLabel);
-        resultPanel.add(Box.createVerticalStrut(15));
-
-        // Điểm số chi tiết
-        JLabel scoreDetail = new JLabel(
-            String.format("Đen: %d  —  Trắng: %d", blackScore, whiteScore),
-            SwingConstants.CENTER);
-        scoreDetail.setFont(new Font("Arial", Font.BOLD, 18));
-        scoreDetail.setForeground(Color.WHITE);
-        scoreDetail.setAlignmentX(Component.CENTER_ALIGNMENT);
-        resultPanel.add(scoreDetail);
-        resultPanel.add(Box.createVerticalStrut(8));
-
-        // Điểm của người chơi
-        JLabel playerScoreLabel = new JLabel(
-            String.format("Điểm của bạn (%s): %d", playerName, playerScore),
-            SwingConstants.CENTER);
-        playerScoreLabel.setFont(new Font("Arial", Font.PLAIN, 16));
-        playerScoreLabel.setForeground(new Color(180, 220, 130));
-        playerScoreLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        resultPanel.add(playerScoreLabel);
-
-        // Thông báo nếu lọt top
-        if (isTopScore) {
-            resultPanel.add(Box.createVerticalStrut(8));
-            JLabel topLabel = new JLabel("(*) Bạn đã lọt vào bảng xếp hạng!", SwingConstants.CENTER);
-            topLabel.setFont(new Font("Arial", Font.BOLD, 15));
-            topLabel.setForeground(new Color(255, 200, 50));
-            topLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-            resultPanel.add(topLabel);
-        }
-
-        dialog.add(resultPanel, BorderLayout.CENTER);
-
-        // Panel nút chức năng
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
-        buttonPanel.setBackground(new Color(30, 60, 15));
-        buttonPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 15, 0));
-
-        // UC-08: Nút Chơi lại
-        JButton restartBtn = createDialogButton("Chơi lại", new Color(46, 160, 67));
-        restartBtn.addActionListener(e -> {
-            dialog.dispose();
-            gameEnded = false;
-            resetGame();
-        });
-        buttonPanel.add(restartBtn);
-
-        // UC-06: Nút Xem bảng xếp hạng
-        JButton leaderboardBtn = createDialogButton("Xếp hạng", new Color(33, 109, 185));
-        leaderboardBtn.addActionListener(e -> {
-            new LeaderboardDialog(dialog, playerName).setVisible(true);
-        });
-        buttonPanel.add(leaderboardBtn);
-
-        // Nút Về menu
-        JButton menuBtn = createDialogButton("Menu", new Color(120, 60, 20));
-        menuBtn.addActionListener(e -> {
-            dialog.dispose();
-            dispose(); // Đóng game, windowClosed sẽ mở lại MainMenu
-        });
-        buttonPanel.add(menuBtn);
-
-        dialog.add(buttonPanel, BorderLayout.SOUTH);
-        dialog.setVisible(true);
-    }
-
-    // UC-05: Tạo nút cho dialog kết quả
-    private JButton createDialogButton(String text, Color bgColor) {
-        JButton btn = new JButton(text);
-        btn.setFont(new Font("Arial", Font.BOLD, 14));
-        btn.setForeground(Color.WHITE);
-        btn.setBackground(bgColor);
-        btn.setFocusPainted(false);
-        btn.setPreferredSize(new Dimension(130, 42));
-        btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        btn.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
-        return btn;
-    }
-
-    // UC-05/UC-06: Setter cho tên người chơi (được gọi từ MainMenu/UC-01)
-    public void setPlayerName(String name) {
-        this.playerName = name;
-    }
-
-
-    // UC-05: Kết thúc trò chơi
-    private void endGame() {
-        if (gameEnded) return; // Tránh gọi nhiều lần
-        gameEnded = true;
-
-        // Dừng đồng hồ
-        if (turnTimer != null && turnTimer.isRunning()) {
-            turnTimer.stop();
-        }
-
-        // UC-05 [1]: Đếm số quân mỗi bên
         int[] score = board.getScore();
         int blackScore = score[0];
         int whiteScore = score[1];
@@ -766,7 +533,6 @@ public class OthelloGame extends JFrame {
     public void setPlayerName(String name) {
         this.playerName = name;
     }
-
 
     // UC-06: Mở bảng xếp hạng từ game
     public void openLeaderboard() {
