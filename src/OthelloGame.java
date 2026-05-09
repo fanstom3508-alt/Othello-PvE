@@ -10,12 +10,9 @@ public class OthelloGame extends JFrame {
     private OthelloCell[][] cells;
     private JPanel boardPanel;
     private JLabel statusLabel, timeBlackLabel, timeWhiteLabel;
-    private JLabel lastMoveLabel, flippedLabel;
     private Timer turnTimer;
     private long timeLeftBlack = 20L * 60 * 1000;
     private long timeLeftWhite = 20L * 60 * 1000;
-    private int lastMoveRow = -1, lastMoveCol = -1, lastMoveFlipped = 0;
-    private int lastMovePlayer = -1;
 
     public OthelloGame() {
         board = new Board();
@@ -26,14 +23,13 @@ public class OthelloGame extends JFrame {
         setLocationRelativeTo(null);
 
         // Người chơi luôn là Đen, Máy luôn là Trắng
-        // TODO (UC-02): Thay bằng màu do người chơi chọn
         blackPlayer = new HumanPlayer(Board.BLACK);
         whitePlayer = new ComputerPlayer(Board.WHITE);
 
         createMenu();
         createStatusPanel();
         createBoardPanel();
-        resetGame();  
+        resetGame();
 
         // Khi đóng cửa sổ game, hiện lại MainMenu
         addWindowListener(new WindowAdapter() {
@@ -43,8 +39,8 @@ public class OthelloGame extends JFrame {
             }
         });
     }
-    
-    // Hàm mô tả thành phần menu bar
+
+    // Hàm mô tả thành phần menu
     private void createMenu() {
         JMenuBar menuBar = new JMenuBar();
         JMenu gameMenu = new JMenu("Trò chơi");
@@ -56,14 +52,10 @@ public class OthelloGame extends JFrame {
         newGame.addActionListener(e -> resetGame());
         endGame.addActionListener(e -> endGame());
         backMenu.addActionListener(e -> {
-            // TODO (UC-09): Thêm xác nhận trước khi thoát giữa ván
             turnTimer.stop();
             dispose();
         });
-        exit.addActionListener(e -> {
-            // TODO (UC-09): Thêm hộp thoại "Are you sure?"
-            System.exit(0);
-        });
+        exit.addActionListener(e -> System.exit(0));
 
         gameMenu.add(newGame);
         gameMenu.add(endGame);
@@ -74,22 +66,8 @@ public class OthelloGame extends JFrame {
 
         setJMenuBar(menuBar);
     }
-    
-    private void resetGame() {
-        board.reset();
-        timeLeftBlack = 20L * 60 * 1000;
-        timeLeftWhite = 20L * 60 * 1000;
-        timeBlackLabel.setText("Đen (Bạn): 20:00");
-        timeWhiteLabel.setText("Trắng (Máy): 20:00");
-        if (turnTimer != null && turnTimer.isRunning()) turnTimer.stop();
-        turnTimer.start();
-        lastMoveRow = -1; lastMoveCol = -1; lastMoveFlipped = 0; lastMovePlayer = -1;
-        updateLastMoveLabels();
-        updateBoard();
-    	
-    }
 
-    // Hàm tạo, vẽ bảng 8x8
+    // Hàm tạo, vẽ bảng
     private void createBoardPanel() {
         boardPanel = new JPanel(new GridLayout(8, 8, 2, 2));
         cells = new OthelloCell[8][8];
@@ -100,8 +78,8 @@ public class OthelloGame extends JFrame {
                 final int row = i, col = j;
                 cell.addMouseListener(new MouseAdapter() {
                     @Override
-                    // UC-04
                     public void mouseClicked(MouseEvent e) {
+                        handleMove(row, col);
                     }
                 });
                 cells[i][j] = cell;
@@ -113,14 +91,12 @@ public class OthelloGame extends JFrame {
 
     // Hàm tạo Panel thông tin trận đấu phía dưới bảng
     private void createStatusPanel() {
-        JPanel statusPanel = new JPanel(new GridLayout(4, 1, 0, 6));
-        statusPanel.setBorder(BorderFactory.createEmptyBorder(8, 10, 8, 10));
+        JPanel statusPanel = new JPanel(new GridLayout(3, 1, 0, 10));
+        statusPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        // Dòng 1: lượt + điểm
         statusLabel = new JLabel("Lượt đi: Đen (Bạn)", SwingConstants.CENTER);
         statusLabel.setFont(new Font("Arial", Font.BOLD, 20));
 
-        // Dòng 2: đồng hồ
         timeBlackLabel = new JLabel("Đen (Bạn): 20:00");
         timeWhiteLabel = new JLabel("Trắng (Máy): 20:00");
         timeBlackLabel.setFont(new Font("Arial", Font.BOLD, 18));
@@ -131,34 +107,24 @@ public class OthelloGame extends JFrame {
         timePanel.add(new JLabel("|"));
         timePanel.add(timeWhiteLabel);
 
-        // Dòng 3: vị trí nước đi vừa rồi
-        lastMoveLabel = new JLabel("Nước vừa đi: —", SwingConstants.CENTER);
-        lastMoveLabel.setFont(new Font("Arial", Font.PLAIN, 16));
-
-        // Dòng 4: số quân bị lật
-        flippedLabel = new JLabel("Số quân ăn được: —", SwingConstants.CENTER);
-        flippedLabel.setFont(new Font("Arial", Font.PLAIN, 16));
-
         statusPanel.add(statusLabel);
         statusPanel.add(timePanel);
-        statusPanel.add(lastMoveLabel);
-        statusPanel.add(flippedLabel);
         add(statusPanel, BorderLayout.SOUTH);
 
         turnTimer = new Timer(1000, e -> updateTimer());
     }
 
-    // Cập nhật đồng hồ đếm ngược
+    // Cập nhật dữ kiện thời gian trận đấu
     private void updateTimer() {
         int current = board.getCurrentPlayer();
         if (current == Board.BLACK) {
             timeLeftBlack = Math.max(0, timeLeftBlack - 1000);
             timeBlackLabel.setText("Đen (Bạn): " + formatTime(timeLeftBlack));
-            if (timeLeftBlack <= 0) {} // UC-05
+            if (timeLeftBlack <= 0) endGameByTime(Board.WHITE);
         } else {
             timeLeftWhite = Math.max(0, timeLeftWhite - 1000);
             timeWhiteLabel.setText("Trắng (Máy): " + formatTime(timeLeftWhite));
-            if (timeLeftWhite <= 0) {} // UC-05
+            if (timeLeftWhite <= 0) endGameByTime(Board.BLACK);
         }
     }
 
@@ -168,12 +134,73 @@ public class OthelloGame extends JFrame {
         return String.format("%02d:%02d", minutes, seconds);
     }
 
-    // Hàm cập nhật lại bảng (hiển thị quân + highlight ô hợp lệ)
-    private void updateBoard() {
-    	// UC-05 bổ sung thêm
+    // Hàm bắt đầu game lại từ đầu
+    private void resetGame() {
+        board.reset();
+        timeLeftBlack = 20L * 60 * 1000;
+        timeLeftWhite = 20L * 60 * 1000;
+        timeBlackLabel.setText("Đen (Bạn): 20:00");
+        timeWhiteLabel.setText("Trắng (Máy): 20:00");
+        if (turnTimer != null && turnTimer.isRunning()) turnTimer.stop();
+        turnTimer.start();
+        updateBoard();
+    }
+
+    // Hàm xử lý sự kiện khi người chơi click vào (chỉ lượt Đen - người chơi)
+    private void handleMove(int row, int col) {
+        if (board.getCurrentPlayer() == Board.BLACK) {
+            if (board.isValidMove(row, col, Board.BLACK)) {
+                board.makeMove(row, col, Board.BLACK);
+                board.switchPlayer();
+                TurnBegin();
+            }
+        }
+    }
+
+    private void TurnBegin() {
         if (board.isGameOver()) {
-        	endGame();
-        	return;
+            endGame();
+            return;
+        }
+
+        // Cập nhật bàn cờ hiển thị nước vừa đi
+        updateBoard();
+
+        int curPlayer = board.getCurrentPlayer();
+        Player player = (curPlayer == Board.BLACK) ? blackPlayer : whitePlayer;
+
+        // Kiểm tra nếu người chơi hiện tại không còn nước đi
+        if (board.getValidMoves(curPlayer).isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                (curPlayer == Board.BLACK ? "Bạn" : "Máy") + " không còn nước đi, chuyển lượt!");
+            board.switchPlayer();
+            TurnBegin();
+            return;
+        }
+
+        if (player instanceof ComputerPlayer) {
+            MoveCallBack callback = new MoveCallBack() {
+                @Override
+                public void onMove(int row, int col) {
+                    if (row == -1 && col == -1) { // Máy pass
+                        board.switchPlayer();
+                        TurnBegin();
+                        return;
+                    }
+                    board.makeMove(row, col, curPlayer);
+                    board.switchPlayer();
+                    TurnBegin();
+                }
+            };
+            player.makeMove(board, callback);
+        }
+    }
+
+    // Hàm cập nhật lại bảng
+    private void updateBoard() {
+        if (board.isGameOver()) {
+            endGame();
+            return;
         }
         int current = board.getCurrentPlayer();
         int[] score = board.getScore();
@@ -195,43 +222,27 @@ public class OthelloGame extends JFrame {
         }
     }
 
-    // UC-04: Thực hiện nước đi  (placeholder — do người làm UC-04 implement)
-
-    private void handleMove(int row, int col) {
-        // TODO (UC-04): Implement xử lý nước đi của người chơi
-    }
-
-    private void TurnBegin() {
-        updateBoard();
-        // TODO (UC-04): Implement vòng lặp lượt chơi (người + AI)
-    }
-
-    // Hàm cập nhật nhãn nước vừa đi và số quân ăn được
-    private void updateLastMoveLabels() {
-        if (lastMoveRow < 0) {
-            lastMoveLabel.setText("Nước vừa đi: —");
-            flippedLabel.setText("Số quân ăn được: —");
-            return;
-        }
-        char colChar = (char)('A' + lastMoveCol);
-        int rowNum = lastMoveRow + 1;
-        String who = (lastMovePlayer == Board.BLACK) ? "Đen (Bạn)" : "Trắng (Máy)";
-        lastMoveLabel.setText(String.format("Nước vừa đi: %s đặt tại %c%d", who, colChar, rowNum));
-        flippedLabel.setText(String.format("Số quân ăn được: %d", lastMoveFlipped));
-    }
-
-    // UC-05: Kết thúc trò chơi  (placeholder — do người làm UC-05 implement)
-
-    // TODO (UC-05): Hiển thị kết quả, lưu điểm, tùy chọn chơi lại / xem leaderboard
+    // Hàm dừng và kết thúc game
     private void endGame() {
-
+        turnTimer.stop();
+        int[] score = board.getScore();
+        String result = score[0] > score[1] ? "🖤 Bạn (Đen) thắng!" :
+                        score[1] > score[0] ? "⚪ Máy (Trắng) thắng!" : "🤝 Hòa!";
+        String msg = result + "\nĐiểm: Đen " + score[0] + " - Trắng " + score[1] +
+                     "\nThời gian còn:\nBạn (Đen): " + formatTime(timeLeftBlack) +
+                     "\nMáy (Trắng): " + formatTime(timeLeftWhite);
+        int choice = JOptionPane.showOptionDialog(this, msg, "Kết thúc ván",
+            JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null,
+            new String[]{"Chơi lại", "Về menu"}, "Chơi lại");
+        if (choice == 0) resetGame();
+        else dispose();
     }
 
-    // TODO (UC-05): Xử lý kết thúc do hết giờ
+    // Hàm kết thúc game do hết thời gian
     private void endGameByTime(int winner) {
+        turnTimer.stop();
+        String who = (winner == Board.BLACK) ? "Bạn (Đen)" : "Máy (Trắng)";
+        String msg = who + " thắng do đối thủ hết giờ!";
+        JOptionPane.showMessageDialog(this, msg, "Hết giờ!", JOptionPane.WARNING_MESSAGE);
     }
-
-    // UC-09: Thoát game  (placeholder — do người làm UC-09 implement)
-
-
 }
