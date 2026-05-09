@@ -15,6 +15,20 @@ public class MainMenu extends JFrame {
         setContentPane(new MenuPanel());
     }
 
+
+    // Panel vẽ toàn bộ giao diện menu
+    private class MenuPanel extends JPanel {
+
+        private JButton btnPlay;
+        private JButton btnHowTo;
+
+        public MenuPanel() {
+            setLayout(null); // dùng absolute layout để tự định vị
+            setBackground(new Color(30, 60, 15));
+
+            // ---- Nút CHƠI VỚI MÁY ----
+            btnPlay = createStyledButton("▶  Chơi với máy", new Color(46, 160, 67), new Color(36, 130, 52));
+
     private class MenuPanel extends JPanel {
 
         private JButton btnPlay;
@@ -27,9 +41,13 @@ public class MainMenu extends JFrame {
 
             // UC-03: Nút bắt đầu game - chơi với máy
             btnPlay = createStyledButton("Chơi với máy", new Color(46, 160, 67), new Color(36, 130, 52));
+
             btnPlay.setBounds(110, 350, 300, 65);
             btnPlay.addActionListener(e -> startGame());
             add(btnPlay);
+
+
+            // ---- Nút CÁCH CHƠI ----
 
             // TODO (UC-01): Trước khi startGame() cần mở màn hình nhập tên
 
@@ -40,6 +58,7 @@ public class MainMenu extends JFrame {
             // add(btnLeaderboard);
             
             
+
             btnHowTo = createStyledButton("?  Cách chơi", new Color(33, 109, 185), new Color(24, 85, 150));
             btnHowTo.setBounds(110, 440, 300, 65);
             btnHowTo.addActionListener(e -> openHowToPlay());
@@ -55,23 +74,39 @@ public class MainMenu extends JFrame {
             g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
             int w = getWidth();
+
+
+            // --- Gradient nền ---
+
             
             // Gradient nền
+
             GradientPaint bg = new GradientPaint(0, 0, new Color(20, 50, 10), 0, getHeight(), new Color(40, 80, 20));
             g2.setPaint(bg);
             g2.fillRect(0, 0, w, getHeight());
+
+
+            // --- Mini bàn cờ minh họa 4x4 ở trên ---
+            drawMiniBoard(g2, w);
+
+            // --- Tiêu đề OTHELLO ---
 
             //Mini bàn cờ minh họa 4x4 ở trê
             drawMiniBoard(g2, w);
 
             // Tiêu đề OTHELLO
+
             g2.setColor(new Color(255, 220, 50));
             g2.setFont(new Font("Arial", Font.BOLD, 52));
             FontMetrics fm = g2.getFontMetrics();
             String title = "OTHELLO";
             g2.drawString(title, (w - fm.stringWidth(title)) / 2, 290);
 
+
+            // --- Phụ đề ---
+
             // Phụ đề
+
             g2.setColor(new Color(180, 220, 130));
             g2.setFont(new Font("Arial", Font.PLAIN, 16));
             fm = g2.getFontMetrics();
@@ -81,9 +116,18 @@ public class MainMenu extends JFrame {
 
         private void drawMiniBoard(Graphics2D g2, int panelWidth) {
             int cellSize = 38;
+
+            int cols = 6;
+            int rows = 4;
+            int boardW = cols * cellSize;
+            int boardH = rows * cellSize;
+            int startX = (panelWidth - boardW) / 2;
+            int startY = 40;
+
             int cols = 6, rows = 4;
             int boardW = cols * cellSize, boardH = rows * cellSize;
             int startX = (panelWidth - boardW) / 2, startY = 40;
+
 
             // Nền bàn cờ
             g2.setColor(new Color(53, 101, 21));
@@ -91,6 +135,26 @@ public class MainMenu extends JFrame {
 
             // Ô lưới
             g2.setColor(new Color(0, 70, 0));
+
+            for (int r = 0; r < rows; r++) {
+                for (int c = 0; c < cols; c++) {
+                    g2.drawRect(startX + c * cellSize, startY + r * cellSize, cellSize, cellSize);
+                }
+            }
+
+            // Vẽ quân cờ trang trí (vị trí cố định tạo hình đẹp)
+            int[][] blacks = {{1,1},{1,4},{2,2},{0,3},{3,0},{3,5}};
+            int[][] whites = {{0,0},{0,5},{1,2},{1,3},{2,3},{3,2},{3,3}};
+
+            for (int[] pos : blacks) {
+                drawDisc(g2, startX + pos[1] * cellSize + cellSize/2,
+                         startY + pos[0] * cellSize + cellSize/2, cellSize/2 - 4, Color.BLACK, null);
+            }
+            for (int[] pos : whites) {
+                drawDisc(g2, startX + pos[1] * cellSize + cellSize/2,
+                         startY + pos[0] * cellSize + cellSize/2, cellSize/2 - 4, Color.WHITE, Color.DARK_GRAY);
+            }
+
             for (int r = 0; r < rows; r++)
                 for (int c = 0; c < cols; c++)
                     g2.drawRect(startX + c * cellSize, startY + r * cellSize, cellSize, cellSize);
@@ -102,10 +166,21 @@ public class MainMenu extends JFrame {
                 drawDisc(g2, startX + pos[1]*cellSize + cellSize/2, startY + pos[0]*cellSize + cellSize/2, cellSize/2-4, Color.BLACK, null);
             for (int[] pos : whites)
                 drawDisc(g2, startX + pos[1]*cellSize + cellSize/2, startY + pos[0]*cellSize + cellSize/2, cellSize/2-4, Color.WHITE, Color.DARK_GRAY);
+
         }
 
         private void drawDisc(Graphics2D g2, int cx, int cy, int r, Color fill, Color border) {
             g2.setColor(fill);
+
+            g2.fillOval(cx - r, cy - r, r * 2, r * 2);
+            if (border != null) {
+                g2.setColor(border);
+                g2.setStroke(new BasicStroke(2f));
+                g2.drawOval(cx - r, cy - r, r * 2, r * 2);
+            }
+        }
+
+
             g2.fillOval(cx-r, cy-r, r*2, r*2);
             if (border != null) {
                 g2.setColor(border);
@@ -114,6 +189,7 @@ public class MainMenu extends JFrame {
             }
         }
         
+
         // Tạo nút với hiệu ứng hover
         private JButton createStyledButton(String text, Color normalColor, Color hoverColor) {
             JButton btn = new JButton(text) {
@@ -121,6 +197,23 @@ public class MainMenu extends JFrame {
                 protected void paintComponent(Graphics g) {
                     Graphics2D g2 = (Graphics2D) g.create();
                     g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+
+                    Color bg = getModel().isRollover() ? hoverColor : normalColor;
+                    if (getModel().isPressed()) {
+                        bg = bg.darker();
+                    }
+
+                    g2.setColor(bg);
+                    g2.fillRoundRect(0, 0, getWidth(), getHeight(), 18, 18);
+
+                    // Shadow
+                    g2.setColor(new Color(0, 0, 0, 60));
+                    g2.fillRoundRect(2, 4, getWidth(), getHeight(), 18, 18);
+                    g2.setColor(bg);
+                    g2.fillRoundRect(0, 0, getWidth(), getHeight(), 18, 18);
+
+
                     Color bg = getModel().isRollover() ? hoverColor : normalColor;
                     if (getModel().isPressed()) bg = bg.darker();
                     g2.setColor(new Color(0, 0, 0, 60));
@@ -132,6 +225,7 @@ public class MainMenu extends JFrame {
                     g2.setColor(bg);
                     g2.fillRoundRect(0, 0, getWidth(), getHeight(), 18, 18);
                     
+
                     // Text
                     g2.setColor(Color.WHITE);
                     g2.setFont(getFont());
@@ -151,6 +245,13 @@ public class MainMenu extends JFrame {
             return btn;
         }
     }
+
+
+    private void startGame() {
+        dispose(); // đóng menu
+        SwingUtilities.invokeLater(() -> new OthelloGame().setVisible(true));
+    }
+
 
     // UC-03: Mở màn hình game
  // UC-01: Player chọn "Chơi với máy" và nhập tên hiển thị
@@ -276,6 +377,7 @@ public class MainMenu extends JFrame {
     // private void openLeaderboard() { ... }
 
     // UC -03: Mở cách chơi
+
     private void openHowToPlay() {
         String url = "https://www.thegioididong.com/game-app/othello-la-gi-huong-dan-luat-chien-thuat-cach-choi-co-lat-don-1323614";
         try {
