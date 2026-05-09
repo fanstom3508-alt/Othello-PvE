@@ -1,3 +1,4 @@
+
 import java.util.List;
 import java.util.ArrayList;
 
@@ -178,3 +179,16 @@ public class ComputerPlayer extends Player {
                 - XWeight * (AI_X - Opp_X) - CWeight * (AI_C - Opp_C) + PotentialWeight * (AI_pW - Opp_mW);
     }
 }
+
+public class ComputerPlayer extends Player {
+
+    public ComputerPlayer(int color) {
+        super(color);
+    }
+
+    @Override
+    public void makeMove(Board board, MoveCallBack callBack) {
+        // TODO (UC-04): Implement AI Minimax + Alpha-Beta pruning
+    }
+}
+
