@@ -153,11 +153,15 @@ public class MainMenu extends JFrame {
     }
 
     // UC-03: Mở màn hình game
+ // UC-01: Player chọn "Chơi với máy" và nhập tên hiển thị
     private void startGame() {
-        // TODO (UC-01): Gọi màn hình nhập tên trước, truyền tên vào OthelloGame
+    	 // 1.1 Player chọn "Chơi với máy" từ MainMenu
+        // (method này được gọi khi click btnPlay)
     	String playerName;
 
         while (true) {
+
+            // 1.2 System hiển thị hộp thoại nhập tên
             playerName = JOptionPane.showInputDialog(
                     this,
                     "Nhập tên hiển thị (1-20 ký tự):",
@@ -165,51 +169,107 @@ public class MainMenu extends JFrame {
                     JOptionPane.PLAIN_MESSAGE
             );
 
-            if (playerName == null) return;
+            // 1.A1: Người dùng bấm Cancel → quay lại menu
+            if (playerName == null) {
+                return;
+            }
 
+            // 1.3 Player nhập tên hiển thị
             playerName = playerName.trim();
 
+            // 1.5 System kiểm tra tính hợp lệ của tên
+            // 1.A1: Tên rỗng → yêu cầu nhập lại
             if (playerName.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Tên không được để trống.");
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Tên không được để trống. Vui lòng nhập lại!"
+                );
                 continue;
             }
 
+            // 1.A2: Tên > 20 ký tự → báo lỗi
             if (playerName.length() > 20) {
-                JOptionPane.showMessageDialog(this, "Tên tối đa 20 ký tự.");
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Tên tối đa 20 ký tự. Vui lòng nhập lại!"
+                );
                 continue;
             }
 
+            // 1.4 System nhận tên người chơi
+            // 1.5 validation OK → thoát vòng lặp
             break;
         }
-        // TODO (UC-02): Gọi màn hình chọn màu trước, truyền màu vào OthelloGame
-        int colorChoice = JOptionPane.showOptionDialog(
-                this,
-                "Chọn màu quân cờ:",
-                "UC-02 - Choose color",
-                JOptionPane.DEFAULT_OPTION,
-                JOptionPane.QUESTION_MESSAGE,
-                null,
-                new String[]{"Đen (BLACK)", "Trắng (WHITE)"},
-                "Đen (BLACK)"
-        );
 
-        if (colorChoice == -1) {
-            return; // FIX UC-02 cancel
-        }
+        // 1.6 System lưu tên vào GameSession
+        GameSession.setPlayerName(playerName);
 
+        // 1.7 System lưu thành công
+        System.out.println("Saved player name: " + GameSession.getPlayerName());
+
+
+       
+     // UC-02: Player chọn màu quân cờ
+     
         int playerColor;
 
-        if (colorChoice == 1) {
-            playerColor = Board.WHITE;
-        } else {
-            playerColor = Board.BLACK;
+        // loop để xử lý A2 (quay lại UC-01)
+        while (true) {
+
+            // 2.1 System hiển thị dialog chọn màu
+            int choice = JOptionPane.showOptionDialog(
+                    this,
+                    "Chọn màu quân cờ:",
+                    "UC-02 - Choose color",
+                    JOptionPane.DEFAULT_OPTION,
+                    JOptionPane.QUESTION_MESSAGE,
+                    null,
+                    new String[]{"Đen (BLACK)", "Trắng (WHITE)"},
+                    "Đen (BLACK)"
+            );
+
+            // 2.A1: Player không chọn (Cancel)
+            if (choice == -1) {
+
+                int confirm = JOptionPane.showConfirmDialog(
+                        this,
+                        "Bạn chưa chọn màu. Dùng mặc định (Đen)?",
+                        "Xác nhận",
+                        JOptionPane.YES_NO_OPTION
+                );
+
+                if (confirm == JOptionPane.YES_OPTION) {
+                    // 2.5 System xử lý default
+                    playerColor = Board.BLACK;
+                    break;
+                } else {
+                    // 2.A2: quay lại UC-01
+                    startGame();
+                    return;
+                }
+            }
+
+            // 2.2 + 2.3 Player chọn màu
+            playerColor = (choice == 1) ? Board.WHITE : Board.BLACK;
+
+            // 2.4 return value OK
+            break;
         }
 
-        GameSession.setPlayerName(playerName);
+        // 2.7 System lưu màu vào GameSession
         GameSession.setPlayerColor(playerColor);
 
+        // =========================
+        // UC-03: Start Game Screen
+        // =========================
+
+        // 2.8 Khởi tạo game
         dispose();
-        SwingUtilities.invokeLater(() -> new OthelloGame(playerColor).setVisible(true));
+
+        // 2.9 Hiển thị màn hình game
+        SwingUtilities.invokeLater(() ->
+                new OthelloGame(playerColor).setVisible(true)
+        );
     }
 
     // UC-06: Mở màn hình Leaderboard
