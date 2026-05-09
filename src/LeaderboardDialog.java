@@ -98,8 +98,6 @@ public class LeaderboardDialog extends JDialog {
                     if (currentPlayerName != null && currentPlayerName.equals(name)) {
                         c.setBackground(new Color(255, 255, 180)); // Vàng nhạt
                         c.setFont(c.getFont().deriveFont(Font.BOLD));
-                    } else if (row == 0) {
-                        c.setBackground(new Color(255, 215, 0, 80)); // Vàng cho top 1
                     } else if (!isSelected) {
                         c.setBackground(row % 2 == 0 ? Color.WHITE : new Color(240, 240, 240));
                     }
