@@ -35,7 +35,12 @@ public class OthelloGame extends JFrame {
         this.humanColor = chosenHumanColor;
         int computerColor = (humanColor == Board.BLACK) ? Board.WHITE : Board.BLACK;
 
-        // TODO (UC-02): Thay bằng màu do người chơi chọn
+        // UC-01/UC-05: Lấy tên người chơi từ GameSession (do UC-01 thiết lập)
+        String name = GameSession.getPlayerName();
+        if (name != null && !name.trim().isEmpty()) {
+            this.playerName = name.trim();
+        }
+
         humanPlayer = new HumanPlayer(humanColor);
         computerPlayer = new ComputerPlayer(computerColor);
 
