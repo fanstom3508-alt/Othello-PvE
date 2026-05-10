@@ -174,11 +174,11 @@ public class OthelloGame extends JFrame {
 
         // Dòng 3: vị trí nước đi vừa rồi
         lastMoveLabel = new JLabel("Nước vừa đi: —", SwingConstants.CENTER);
-        lastMoveLabel.setFont(new Font("Arial", Font.PLAIN, 16));
+        lastMoveLabel.setFont(new Font("Arial", Font.BOLD, 16));
 
         // Dòng 4: số quân bị lật
         flippedLabel = new JLabel("Số quân ăn được: —", SwingConstants.CENTER);
-        flippedLabel.setFont(new Font("Arial", Font.PLAIN, 16));
+        flippedLabel.setFont(new Font("Arial", Font.BOLD, 16));
 
         statusPanel.add(statusLabel);
         statusPanel.add(timePanel);
@@ -319,6 +319,9 @@ public class OthelloGame extends JFrame {
 
     // UC-3.15: Cập nhật nhãn hiển thị vị trí nước vừa đi và số quân ăn được
     private void updateLastMoveLabels() {
+        Font labelFont = new Font("Arial", Font.BOLD, 16);
+        lastMoveLabel.setFont(labelFont);
+        flippedLabel.setFont(labelFont);
         if (lastMoveRow < 0) {
             lastMoveLabel.setText("Nước vừa đi: —");
             flippedLabel.setText("Số quân ăn được: —");
@@ -329,6 +332,7 @@ public class OthelloGame extends JFrame {
         String who = getPlayerName(lastMovePlayer);
         lastMoveLabel.setText(String.format("Nước vừa đi: %s đặt tại %c%d", who, colChar, rowNum));
         flippedLabel.setText(String.format("Số quân ăn được: %d", lastMoveFlipped));
+        
     }
 
     // UC-05: Kết thúc trò chơi
