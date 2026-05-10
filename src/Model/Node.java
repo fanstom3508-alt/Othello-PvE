@@ -1,4 +1,6 @@
 // class mô tả bước đi để dẫn đến bàn cờ này và người chơi của bàn cờ
+package Model;
+
 public class Node {
 	public Board board;
 	public int [] move;

@@ -1,5 +1,10 @@
+package View;
 import javax.swing.*;
 import javax.swing.table.*;
+
+import Model.HighScoreManager;
+import Model.HighScoreManager.ScoreEntry;
+
 import java.awt.*;
 import java.text.SimpleDateFormat;
 import java.util.List;

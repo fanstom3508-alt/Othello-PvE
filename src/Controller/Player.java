@@ -1,4 +1,8 @@
 // Player.java
+package Controller;
+
+import Model.Board;
+
 public abstract class Player {
     protected int color;
 

@@ -1,4 +1,9 @@
+package View;
 import javax.swing.*;
+
+import Controller.GameSession;
+import Model.Board;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.*;
@@ -46,7 +51,7 @@ public class MainMenu extends JFrame {
             add(btnHowTo);
         }
 
-        // Vẽ nền, bàn cờ minh họa, tiêu đề
+        // UC-3: Vẽ nền, bàn cờ minh họa, tiêu đề
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
@@ -79,6 +84,7 @@ public class MainMenu extends JFrame {
             g2.drawString(sub, (w - fm.stringWidth(sub)) / 2, 318);
         }
 
+        // UC-3: vẽ mini board
         private void drawMiniBoard(Graphics2D g2, int panelWidth) {
             int cellSize = 38;
             int cols = 6, rows = 4;
@@ -104,6 +110,7 @@ public class MainMenu extends JFrame {
                 drawDisc(g2, startX + pos[1]*cellSize + cellSize/2, startY + pos[0]*cellSize + cellSize/2, cellSize/2-4, Color.WHITE, Color.DARK_GRAY);
         }
 
+        // UC-3: vẽ quân cờ
         private void drawDisc(Graphics2D g2, int cx, int cy, int r, Color fill, Color border) {
             g2.setColor(fill);
             g2.fillOval(cx-r, cy-r, r*2, r*2);
@@ -114,7 +121,7 @@ public class MainMenu extends JFrame {
             }
         }
         
-        // Tạo nút với hiệu ứng hover
+        // UC-3: Tạo nút với hiệu ứng hover
         private JButton createStyledButton(String text, Color normalColor, Color hoverColor) {
             JButton btn = new JButton(text) {
                 @Override
