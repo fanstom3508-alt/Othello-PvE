@@ -36,6 +36,7 @@ public class OthelloGame extends JFrame {
         int computerColor = (humanColor == Board.BLACK) ? Board.WHITE : Board.BLACK;
 
         // UC-01/UC-05: Lấy tên người chơi từ GameSession (do UC-01 thiết lập)
+        
         String name = GameSession.getPlayerName();
         if (name != null && !name.trim().isEmpty()) {
             this.playerName = name.trim();
@@ -57,6 +58,8 @@ public class OthelloGame extends JFrame {
             }
         });
     }
+    
+    // UC-3.9, UC-3.26: Trả về tên hiển thị của người chơi theo màu quân (Bạn hoặc Máy)
     private String getPlayerName(int color) {
         if (color == humanColor) {
             return (color == Board.BLACK) ? "Đen (Bạn)" : "Trắng (Bạn)";
@@ -65,7 +68,7 @@ public class OthelloGame extends JFrame {
         }
     }
     
-    // Hàm mô tả thành phần menu bar
+    // UC-3.7 Tạo thanh menu bar với các tùy chọn Chơi mới, Kết thúc ván, Về menu, Thoát
     private void createMenu() {
         JMenuBar menuBar = new JMenuBar();
         JMenu gameMenu = new JMenu("Trò chơi");
@@ -96,6 +99,7 @@ public class OthelloGame extends JFrame {
         setJMenuBar(menuBar);
     }
     
+    // UC-3.13 Reset toàn bộ trạng thái game về ban đầu, khởi động lại đồng hồ, UC-3.14 reset
     private void resetGame() {
         board.reset();
         gameEnded = false;
@@ -115,7 +119,7 @@ public class OthelloGame extends JFrame {
         }
     }
 
-    // Hàm tạo, vẽ bảng 8x8
+    // UC-3.10: Tạo lưới bàn cờ 8x8 gồm 64 ô OthelloCell
     private void createBoardPanel() {
         boardPanel = new JPanel(new GridLayout(8, 8, 2, 2));
         cells = new OthelloCell[8][8];
@@ -138,7 +142,7 @@ public class OthelloGame extends JFrame {
         add(boardPanel, BorderLayout.CENTER);
     }
 
-    // Hàm tạo Panel thông tin trận đấu phía dưới bảng
+    // UC-3.8: Tạo panel hiển thị thông tin trận đấu gồm lượt đi, đồng hồ đếm ngược, nước vừa đi, số quân ăn được
     private void createStatusPanel() {
         JPanel statusPanel = new JPanel(new GridLayout(4, 1, 0, 6));
         statusPanel.setBorder(BorderFactory.createEmptyBorder(8, 10, 8, 10));
@@ -175,7 +179,7 @@ public class OthelloGame extends JFrame {
         turnTimer = new Timer(1000, e -> updateTimer());
     }
 
-    // Cập nhật đồng hồ đếm ngược
+    // UC-3.24:  Đếm ngược đồng hồ mỗi giây cho người chơi hiện tại
     private void updateTimer() {
         int current = board.getCurrentPlayer();
         if (current == Board.BLACK) {
@@ -191,15 +195,17 @@ public class OthelloGame extends JFrame {
         }
     }
 
+    // UC-3.27: Chuyển đổi thời gian từ millisecond sang định dạng mm:ss để hiển thị
     private String formatTime(long millis) {
         long minutes = millis / 60000;
         long seconds = (millis % 60000) / 1000;
         return String.format("%02d:%02d", minutes, seconds);
     }
 
-    // Hàm cập nhật lại bảng (hiển thị quân + highlight ô hợp lệ)
+    // UC-3.16: Vẽ lại toàn bộ bàn cờ, cập nhật trạng thái từng ô và highlight ô hợp lệ
     private void updateBoard() {
     	// UC-05 bổ sung thêm
+    	
     	// Chỉ kiểm tra kết thúc nếu game đã thực sự bắt đầu (có nhiều hơn 4 quân ban đầu)
     	int[] currentScore = board.getScore();
     	int totalPieces = currentScore[0] + currentScore[1];
@@ -301,7 +307,7 @@ public class OthelloGame extends JFrame {
         }
     }
 
-    // Hàm cập nhật nhãn nước vừa đi và số quân ăn được
+    // UC-3.15: Cập nhật nhãn hiển thị vị trí nước vừa đi và số quân ăn được
     private void updateLastMoveLabels() {
         if (lastMoveRow < 0) {
             lastMoveLabel.setText("Nước vừa đi: —");

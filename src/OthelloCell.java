@@ -18,6 +18,7 @@ public class OthelloCell extends JPanel {
         setBorder(BorderFactory.createLineBorder(new Color(0, 70, 0), 1));
     }
 
+    // UC-3.21: Cập nhật trạng thái ô (trống, đen, trắng, ô hợp lệ) và yêu cầu vẽ lại
     public void setState(int state) {
         this.state = state;
         repaint();
@@ -26,6 +27,7 @@ public class OthelloCell extends JPanel {
     	return this.state;
     }
 
+    // UC-3.12, UC-3.23: Vẽ nội dung ô cờ theo trạng thái: quân đen, quân trắng, gợi ý hợp lệ hoặc ô trống
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
