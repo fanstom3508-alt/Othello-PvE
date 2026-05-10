@@ -14,7 +14,7 @@ public class Board {
         reset();
     }
 
-    // UC-03: Khởi tạo bàn cờ về trạng thái ban đầu
+    // UC-3.4: Xóa toàn bộ bàn cờ, đặt 4 quân ban đầu ở giữa, set lượt đi về BLACK
     public void reset() {
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
@@ -27,11 +27,13 @@ public class Board {
         board[4][4] = WHITE;
         currentPlayer = BLACK;
     }
-
+    
+    // UC-3.20: Trả về trạng thái của ô tại vị trí hàng row, cột col
     public int getCell(int row, int col) {
         return board[row][col];
     }
 
+    // UC-3.17, UC-3.25: Trả về màu của người chơi đang có lượt đi
     public int getCurrentPlayer() {
         return currentPlayer;
     }
@@ -89,6 +91,7 @@ public class Board {
         return true;
     }
 
+    // UC3.22/UC-04: Kiểm tra nước đi tại vị trí row, col có hợp lệ với player không (UC5 implement)
     // trả về danh sách các nước đi hợp lệ của người chơi
     public List<int[]> getValidMoves(int player) {
         List<int[]> moves = new ArrayList<>();
@@ -107,7 +110,7 @@ public class Board {
         return getValidMoves(BLACK).isEmpty() && getValidMoves(WHITE).isEmpty();
     }
 
-    // UC-03/UC-05: Đếm điểm
+    // UC-3.18/UC-05:Đếm và trả về số quân đen và trắng hiện tại trên bàn cờ
     public int[] getScore() {
         int[] score = new int[2];
         int black = 0, white = 0;
