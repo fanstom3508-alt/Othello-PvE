@@ -1,3 +1,5 @@
+package Controller;
+import Model.Board;
 
 public class GameSession {
 

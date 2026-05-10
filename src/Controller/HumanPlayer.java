@@ -1,3 +1,6 @@
+package Controller;
+import Model.Board;
+
 public class HumanPlayer extends Player {
     public HumanPlayer(int color) {
         super(color);

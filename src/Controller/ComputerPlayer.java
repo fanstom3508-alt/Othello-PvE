@@ -1,4 +1,9 @@
+package Controller;
 import java.util.List;
+
+import Model.Board;
+import Model.Node;
+
 import java.util.ArrayList;
 
 public class ComputerPlayer extends Player {

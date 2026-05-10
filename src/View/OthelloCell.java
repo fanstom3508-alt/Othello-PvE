@@ -1,4 +1,6 @@
 // Class vẽ cờ trong 1 ô
+package View;
+
 import javax.swing.*;
 import java.awt.*;
 

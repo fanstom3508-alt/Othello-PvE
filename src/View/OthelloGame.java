@@ -1,4 +1,14 @@
+package View;
 import javax.swing.*;
+
+import Controller.ComputerPlayer;
+import Controller.GameSession;
+import Controller.HumanPlayer;
+import Controller.MoveCallBack;
+import Controller.Player;
+import Model.Board;
+import Model.HighScoreManager;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.util.List;
@@ -99,7 +109,7 @@ public class OthelloGame extends JFrame {
         setJMenuBar(menuBar);
     }
     
-    // UC-3.13 Reset toàn bộ trạng thái game về ban đầu, khởi động lại đồng hồ, UC-3.14 reset
+    // UC-3.13 Reset toàn bộ trạng thái game về ban đầu, khởi động lại đồng hồ
     private void resetGame() {
         board.reset();
         gameEnded = false;

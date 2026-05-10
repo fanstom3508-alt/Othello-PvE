@@ -1,3 +1,4 @@
+package Model;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,7 +15,7 @@ public class Board {
         reset();
     }
 
-    // UC-3.4: Xóa toàn bộ bàn cờ, đặt 4 quân ban đầu ở giữa, set lượt đi về BLACK
+    // UC-3.4, UC-3.14 reset: Xóa toàn bộ bàn cờ, đặt 4 quân ban đầu ở giữa, set lượt đi về BLACK
     public void reset() {
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
@@ -91,7 +92,7 @@ public class Board {
         return true;
     }
 
-    // UC3.22/UC-04: Kiểm tra nước đi tại vị trí row, col có hợp lệ với player không (UC5 implement)
+    // UC3.22/UC-04: Kiểm tra nước đi tại vị trí row, col có hợp lệ với player không (UC4 implement)
     // trả về danh sách các nước đi hợp lệ của người chơi
     public List<int[]> getValidMoves(int player) {
         List<int[]> moves = new ArrayList<>();
