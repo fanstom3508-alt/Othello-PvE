@@ -38,7 +38,8 @@ public class OthelloGame extends JFrame {
         board = new Board();
         setTitle("Cờ Othello - Người vs Máy");
         setSize(650, 750);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // đóng game thì trở về menu
+        // 7.3.1: Đóng bằng nút X cũng kích hoạt dispose → windowClosed → MainMenu
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout());
         setLocationRelativeTo(null);
 
@@ -59,7 +60,7 @@ public class OthelloGame extends JFrame {
         createMenu();
         createStatusPanel();
         createBoardPanel();
-        resetGame();
+        restartGame();
 
         // 7.1.5: Khi đóng cửa sổ game, hiện lại MainMenu
         addWindowListener(new WindowAdapter() {
@@ -90,7 +91,7 @@ public class OthelloGame extends JFrame {
         JMenuItem backMenu = new JMenuItem("Về menu chính");
         JMenuItem exit = new JMenuItem("Thoát");
 
-        newGame.addActionListener(e -> resetGame());
+        newGame.addActionListener(e -> restartGame());
         endGame.addActionListener(e -> endGame());
         backMenu.addActionListener(e -> {
             // 7.1.0: Thoát trận đấu hiện tại (Quit Current Match)
@@ -106,6 +107,7 @@ public class OthelloGame extends JFrame {
                 // 7.2.1: Player chọn "Không" → hủy thoát, tiếp tục ván đấu
                 if (confirm != JOptionPane.YES_OPTION) return;
             }
+            // 7.4.1: Game đã kết thúc (gameEnded == true) → bỏ qua confirm, thoát thẳng
             // 7.1.2: Player chọn "Có" → xác nhận thoát
             // 7.1.3: Dừng đồng hồ đếm ngược
             if (turnTimer != null && turnTimer.isRunning()) {
@@ -130,8 +132,8 @@ public class OthelloGame extends JFrame {
     }
 
     // UC-3.13 Reset toàn bộ trạng thái game về ban đầu, khởi động lại đồng hồ
-    private void resetGame() {
-        board.reset();
+    private void restartGame() {
+        board.restart();
         gameEnded = false;
         timeLeftBlack = 20L * 60 * 1000;
         timeLeftWhite = 20L * 60 * 1000;
@@ -554,7 +556,7 @@ public class OthelloGame extends JFrame {
         restartBtn.addActionListener(e -> {
             dialog.dispose();
             gameEnded = false;
-            resetGame();
+            restartGame();
         });
         buttonPanel.add(restartBtn);
 
