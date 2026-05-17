@@ -60,7 +60,7 @@ public class OthelloGame extends JFrame {
         createMenu();
         createStatusPanel();
         createBoardPanel();
-        resetGame();
+        restartGame();
 
         // 7.1.5: Khi đóng cửa sổ game, hiện lại MainMenu
         addWindowListener(new WindowAdapter() {
@@ -91,7 +91,7 @@ public class OthelloGame extends JFrame {
         JMenuItem backMenu = new JMenuItem("Về menu chính");
         JMenuItem exit = new JMenuItem("Thoát");
 
-        newGame.addActionListener(e -> resetGame());
+        newGame.addActionListener(e -> restartGame());
         endGame.addActionListener(e -> endGame());
         backMenu.addActionListener(e -> {
             // 7.1.0: Thoát trận đấu hiện tại (Quit Current Match)
@@ -132,8 +132,8 @@ public class OthelloGame extends JFrame {
     }
 
     // UC-3.13 Reset toàn bộ trạng thái game về ban đầu, khởi động lại đồng hồ
-    private void resetGame() {
-        board.reset();
+    private void restartGame() {
+        board.restart();
         gameEnded = false;
         timeLeftBlack = 20L * 60 * 1000;
         timeLeftWhite = 20L * 60 * 1000;
@@ -556,7 +556,7 @@ public class OthelloGame extends JFrame {
         restartBtn.addActionListener(e -> {
             dialog.dispose();
             gameEnded = false;
-            resetGame();
+            restartGame();
         });
         buttonPanel.add(restartBtn);
 
