@@ -38,7 +38,8 @@ public class OthelloGame extends JFrame {
         board = new Board();
         setTitle("Cờ Othello - Người vs Máy");
         setSize(650, 750);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // đóng game thì trở về menu
+        // 7.3.1: Đóng bằng nút X cũng kích hoạt dispose → windowClosed → MainMenu
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout());
         setLocationRelativeTo(null);
 
@@ -106,6 +107,7 @@ public class OthelloGame extends JFrame {
                 // 7.2.1: Player chọn "Không" → hủy thoát, tiếp tục ván đấu
                 if (confirm != JOptionPane.YES_OPTION) return;
             }
+            // 7.4.1: Game đã kết thúc (gameEnded == true) → bỏ qua confirm, thoát thẳng
             // 7.1.2: Player chọn "Có" → xác nhận thoát
             // 7.1.3: Dừng đồng hồ đếm ngược
             if (turnTimer != null && turnTimer.isRunning()) {
