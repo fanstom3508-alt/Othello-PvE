@@ -30,13 +30,13 @@ public class MainMenu extends JFrame {
             setLayout(null);
             setBackground(new Color(30, 60, 15));
 
-            // UC-03: Nút bắt đầu game - chơi với máy
+            // UC-01: Nút bắt đầu game - chơi với máy
             btnPlay = createStyledButton("Chơi với máy", new Color(46, 160, 67), new Color(36, 130, 52));
             btnPlay.setBounds(110, 350, 300, 65);
             btnPlay.addActionListener(e -> startGame());
             add(btnPlay);
 
-            // TODO (UC-01): Trước khi startGame() cần mở màn hình nhập tên
+            // TODO (UC-02): Trước khi startGame() cần mở màn hình nhập tên
 
             // UC-05 5.1.0: Nút xem bảng xếp hạng
             btnLeaderboard = createStyledButton("Bảng xếp hạng", new Color(33, 109, 185), new Color(24, 85, 150));
@@ -51,7 +51,7 @@ public class MainMenu extends JFrame {
             add(btnHowTo);
         }
 
-        // UC-3: Vẽ nền, bàn cờ minh họa, tiêu đề
+        // UC-1: Vẽ nền, bàn cờ minh họa, tiêu đề
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
@@ -84,7 +84,7 @@ public class MainMenu extends JFrame {
             g2.drawString(sub, (w - fm.stringWidth(sub)) / 2, 318);
         }
 
-        // UC-3: vẽ mini board
+        // UC-1: vẽ mini board
         private void drawMiniBoard(Graphics2D g2, int panelWidth) {
             int cellSize = 38;
             int cols = 6, rows = 4;
@@ -110,7 +110,7 @@ public class MainMenu extends JFrame {
                 drawDisc(g2, startX + pos[1]*cellSize + cellSize/2, startY + pos[0]*cellSize + cellSize/2, cellSize/2-4, Color.WHITE, Color.DARK_GRAY);
         }
 
-        // UC-3: vẽ quân cờ
+        // UC-1: vẽ quân cờ
         private void drawDisc(Graphics2D g2, int cx, int cy, int r, Color fill, Color border) {
             g2.setColor(fill);
             g2.fillOval(cx-r, cy-r, r*2, r*2);
@@ -121,7 +121,7 @@ public class MainMenu extends JFrame {
             }
         }
         
-        // UC-3: Tạo nút với hiệu ứng hover
+        // UC-1: Tạo nút với hiệu ứng hover
         private JButton createStyledButton(String text, Color normalColor, Color hoverColor) {
             JButton btn = new JButton(text) {
                 @Override
@@ -159,16 +159,16 @@ public class MainMenu extends JFrame {
         }
     }
 
-    // UC-3.1: Khởi động ván game mới, tạo đối tượng OthelloGame và chuyển sang màn hình chơi
- // UC-01: Player chọn "Chơi với máy" và nhập tên hiển thị
+    // UC-1.1: Khởi động ván game mới, tạo đối tượng OthelloGame và chuyển sang màn hình chơi
+ // UC-02: Player chọn "Chơi với máy" và nhập tên hiển thị
     private void startGame() {
-    	 // 1.1 Player chọn "Chơi với máy" từ MainMenu
+    	 // 2.1 Player chọn "Chơi với máy" từ MainMenu
         // (method này được gọi khi click btnPlay)
     	String playerName;
 
         while (true) {
 
-            // 1.2 System hiển thị hộp thoại nhập tên
+            // 2.2 System hiển thị hộp thoại nhập tên
             playerName = JOptionPane.showInputDialog(
                     this,
                     "Nhập tên hiển thị (1-20 ký tự):",
@@ -176,16 +176,16 @@ public class MainMenu extends JFrame {
                     JOptionPane.PLAIN_MESSAGE
             );
 
-            // 1.A1: Người dùng bấm Cancel → quay lại menu
+            // 2.A1: Người dùng bấm Cancel → quay lại menu
             if (playerName == null) {
                 return;
             }
 
-            // 1.3 Player nhập tên hiển thị
+            // 2.3 Player nhập tên hiển thị
             playerName = playerName.trim();
 
-            // 1.5 System kiểm tra tính hợp lệ của tên
-            // 1.A1: Tên rỗng → yêu cầu nhập lại
+            // 2.5 System kiểm tra tính hợp lệ của tên
+            // 2.A1: Tên rỗng → yêu cầu nhập lại
             if (playerName.isEmpty()) {
                 JOptionPane.showMessageDialog(
                         this,
@@ -194,7 +194,7 @@ public class MainMenu extends JFrame {
                 continue;
             }
 
-            // 1.A2: Tên > 20 ký tự → báo lỗi
+            // 2.A2: Tên > 20 ký tự → báo lỗi
             if (playerName.length() > 20) {
                 JOptionPane.showMessageDialog(
                         this,
@@ -203,15 +203,15 @@ public class MainMenu extends JFrame {
                 continue;
             }
 
-            // 1.4 System nhận tên người chơi
-            // 1.5 validation OK → thoát vòng lặp
+            // 2.4 System nhận tên người chơi
+            // 2.5 validation OK → thoát vòng lặp
             break;
         }
 
-        // 1.6 System lưu tên vào GameSession
+        // 2.6 System lưu tên vào GameSession
         GameSession.setPlayerName(playerName);
 
-        // 1.7 System lưu thành công
+        // 2.7 System lưu thành công
         System.out.println("Saved player name: " + GameSession.getPlayerName());
 
 
@@ -274,6 +274,7 @@ public class MainMenu extends JFrame {
         dispose();
 
         // 2.9 Hiển thị màn hình game
+        // UC-1.2: new đối tượng OthelloGame
         SwingUtilities.invokeLater(() ->
                 new OthelloGame(playerColor).setVisible(true)
         );

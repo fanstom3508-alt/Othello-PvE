@@ -10,7 +10,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * JUnit Test cho các phương thức trong ComputerPlayer — UC-04
+ * JUnit Test cho các phương thức trong ComputerPlayer — UC-03
  * Bao gồm: getOppColor, minimax, alphaBeta, heuristic (gián tiếp qua alphaBeta)
  */
 public class ComputerPlayerTest {
