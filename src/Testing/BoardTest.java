@@ -9,7 +9,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * JUnit Test cho UC-04: Make Move
+ * JUnit Test cho UC-03: Make a Move
  * Bao gồm: getFlippedCells, getFlippableCount, isValidMove,
  *           makeMove, getValidMoves, switchPlayer, isGameOver
  */
