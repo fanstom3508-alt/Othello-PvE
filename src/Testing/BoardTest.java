@@ -20,7 +20,7 @@ public class BoardTest {
     @BeforeEach
     void setUp() {
         board = new Board();
-        // Trạng thái ban đầu sau reset():
+        // Trạng thái ban đầu sau restart():
         // board[3][3]=WHITE, board[3][4]=BLACK
         // board[4][3]=BLACK, board[4][4]=WHITE
         // currentPlayer = BLACK

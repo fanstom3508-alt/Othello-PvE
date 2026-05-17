@@ -12,11 +12,11 @@ public class Board {
 
     public Board() {
         board = new int[8][8];
-        reset();
+        restart();
     }
 
-    // UC-3.4, UC-3.14 reset: Xóa toàn bộ bàn cờ, đặt 4 quân ban đầu ở giữa, set lượt đi về BLACK
-    public void reset() {
+    // UC-3.4, UC-3.14 restart: Xóa toàn bộ bàn cờ, đặt 4 quân ban đầu ở giữa, set lượt đi về BLACK
+    public void restart() {
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 board[i][j] = EMPTY;
