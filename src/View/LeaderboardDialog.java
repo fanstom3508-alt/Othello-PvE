@@ -1,4 +1,5 @@
 package View;
+
 import javax.swing.*;
 import javax.swing.table.*;
 
@@ -9,7 +10,7 @@ import java.awt.*;
 import java.text.SimpleDateFormat;
 import java.util.List;
 
-// UC-06: Bảng xếp hạng điểm cao — hiển thị top 10
+// UC-05: Xem bảng xếp hạng (View Leaderboard) — hiển thị top 10
 public class LeaderboardDialog extends JDialog {
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy HH:mm");
     private String currentPlayerName; // Tên người chơi hiện tại để highlight
@@ -38,19 +39,19 @@ public class LeaderboardDialog extends JDialog {
         headerPanel.add(titleLabel, BorderLayout.CENTER);
         add(headerPanel, BorderLayout.NORTH);
 
-        // UC-06 [2]: Đọc dữ liệu từ file lưu trữ cục bộ
+        // UC-05 5.1.1: Đọc dữ liệu từ file lưu trữ cục bộ
         List<HighScoreManager.ScoreEntry> scores = HighScoreManager.getTopScores();
 
         if (scores.isEmpty()) {
-            // UC-06 [A1]: Chưa có dữ liệu → hiển thị thông báo
+            // UC-05 5.2.1: Chưa có dữ liệu → hiển thị thông báo
             JLabel emptyLabel = new JLabel("No high scores available", SwingConstants.CENTER);
             emptyLabel.setFont(new Font("Arial", Font.ITALIC, 18));
             emptyLabel.setForeground(Color.GRAY);
             add(emptyLabel, BorderLayout.CENTER);
         } else {
-            // UC-06 [3]: Sắp xếp giảm dần (xử lý trong HighScoreManager.getTopScores)
-            // UC-06 [4]: Hiển thị top 10 dạng bảng
-            String[] columnNames = {"Hạng", "Tên người chơi", "Điểm", "Ngày đạt được"};
+            // UC-05 5.1.2: Sắp xếp giảm dần (xử lý trong HighScoreManager.getTopScores)
+            // UC-05 5.1.3: Hiển thị top 10 dạng bảng
+            String[] columnNames = { "Hạng", "Tên người chơi", "Điểm", "Ngày đạt được" };
             Object[][] data = new Object[scores.size()][4];
 
             for (int i = 0; i < scores.size(); i++) {
@@ -90,7 +91,7 @@ public class LeaderboardDialog extends JDialog {
             table.getColumnModel().getColumn(2).setPreferredWidth(70);
             table.getColumnModel().getColumn(3).setPreferredWidth(150);
 
-            // UC-06 [5]: Highlight dòng của người chơi hiện tại
+            // UC-05 5.1.4: Highlight dòng của người chơi hiện tại
             table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
                 @Override
                 public Component getTableCellRendererComponent(JTable table, Object value,
