@@ -106,12 +106,12 @@ public class Board {
         return moves;
     }
 
-    // UC-03/UC-05: Kiểm tra game kết thúc
+    // UC-03/UC-04: Kiểm tra game kết thúc
     public boolean isGameOver() {
         return getValidMoves(BLACK).isEmpty() && getValidMoves(WHITE).isEmpty();
     }
 
-    // UC-3.18/UC-05:Đếm và trả về số quân đen và trắng hiện tại trên bàn cờ
+    // UC-3.18/UC-04: Đếm và trả về số quân đen và trắng hiện tại trên bàn cờ
     public int[] getScore() {
         int[] score = new int[2];
         int black = 0, white = 0;

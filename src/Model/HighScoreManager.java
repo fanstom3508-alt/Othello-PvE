@@ -1,9 +1,10 @@
 package Model;
+
 import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-// UC-05 / UC-06: Quản lý bảng điểm cao — lưu và đọc file cục bộ
+// UC-04 / UC-05: Quản lý bảng điểm cao — lưu và đọc file cục bộ
 public class HighScoreManager {
     // Đường dẫn file lưu điểm cao (cùng thư mục với ứng dụng)
     private static final String FILE_NAME = "highscores.dat";
@@ -92,7 +93,7 @@ public class HighScoreManager {
         }
     }
 
-    // UC-05 [4]: Thêm điểm mới — mỗi tên chỉ lưu 1 bản ghi, cập nhật nếu điểm cao hơn (BRule-09)
+    // UC-04: Thêm điểm mới — mỗi tên chỉ lưu 1 bản ghi, cập nhật nếu điểm cao hơn (BRule-09)
     public static boolean addScore(String playerName, int score) {
         List<ScoreEntry> scores = loadScores();
 
@@ -105,7 +106,8 @@ public class HighScoreManager {
         }
 
         if (existing != null) {
-            if (score <= existing.getScore()) return false;
+            if (score <= existing.getScore())
+                return false;
             scores.remove(existing);
         }
 
@@ -121,7 +123,7 @@ public class HighScoreManager {
         return scores.contains(newEntry);
     }
 
-    // UC-06 [2][3]: Đọc dữ liệu từ file và trả về top 10 đã sắp xếp giảm dần
+    // UC-05 5.1.1, 5.1.2: Đọc dữ liệu từ file và trả về top 10 đã sắp xếp giảm dần
     public static List<ScoreEntry> getTopScores() {
         List<ScoreEntry> scores = loadScores();
         // Giới hạn 10
@@ -131,7 +133,7 @@ public class HighScoreManager {
         return scores;
     }
 
-    // UC-06: Tìm điểm cao nhất của một người chơi cụ thể
+    // UC-05 5.1.4: Tìm điểm cao nhất của một người chơi cụ thể
     public static int getBestScore(String playerName) {
         List<ScoreEntry> scores = loadScores();
         int best = -1;
