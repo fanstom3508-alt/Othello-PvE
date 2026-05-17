@@ -23,7 +23,7 @@ public class MainMenu extends JFrame {
     private class MenuPanel extends JPanel {
 
         private JButton btnPlay;
-        private JButton btnLeaderboard; // TODO (UC-06): Nút xem bảng xếp hạng
+        private JButton btnLeaderboard; // UC-05: Nút xem bảng xếp hạng
         private JButton btnHowTo;
 
         public MenuPanel() {
@@ -38,7 +38,7 @@ public class MainMenu extends JFrame {
 
             // TODO (UC-01): Trước khi startGame() cần mở màn hình nhập tên
 
-            // UC-06: Nút xem bảng xếp hạng
+            // UC-05 5.1.0: Nút xem bảng xếp hạng
             btnLeaderboard = createStyledButton("Bảng xếp hạng", new Color(33, 109, 185), new Color(24, 85, 150));
             btnLeaderboard.setBounds(110, 440, 300, 65);
             btnLeaderboard.addActionListener(e -> openLeaderboard());
@@ -279,7 +279,7 @@ public class MainMenu extends JFrame {
         );
     }
 
-    // UC-06: Mở màn hình Leaderboard
+    // UC-05 5.1.0: Mở màn hình Leaderboard
     private void openLeaderboard() {
         new LeaderboardDialog(this, null).setVisible(true);
     }
