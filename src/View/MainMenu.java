@@ -176,7 +176,7 @@ public class MainMenu extends JFrame {
             playerName = JOptionPane.showInputDialog(
                     this,
                     "Nhập tên hiển thị (1-20 ký tự):",
-                    "UC-01 - Enter display name",
+                    "UC-02 - Enter display name",
                     JOptionPane.PLAIN_MESSAGE);
 
             // 2.5.1 Player hủy bỏ toàn bộ tại bất kỳ bước nào (Cancel/X trên dialog nhập tên, playerName == null)
