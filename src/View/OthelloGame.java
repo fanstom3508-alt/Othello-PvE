@@ -72,6 +72,7 @@ public class OthelloGame extends JFrame {
     }
 
     // UC-1.9, UC-1.26, UC-1.19: Trả về tên hiển thị của người chơi theo màu quân (Bạn hoặc Máy)
+    // UC-3.11: Lấy chuỗi tên hiển thị của người chơi dựa trên màu quân cờ hiện tại
     private String getPlayerName(int color) {
         if (color == humanColor) {
             return (color == Board.BLACK) ? "Đen (Bạn)" : "Trắng (Bạn)";
@@ -164,7 +165,7 @@ public class OthelloGame extends JFrame {
                 final int row = i, col = j;
                 cell.addMouseListener(new MouseAdapter() {
                     @Override
-                    // UC-03
+                    // UC-3.1: Bắt sự kiện click chuột của người chơi trên bàn cờ (boardPanel)
                     public void mouseClicked(MouseEvent e) {
                         handleMove(row, col);
                     }
@@ -244,6 +245,7 @@ public class OthelloGame extends JFrame {
     }
 
     // UC-1.16: Vẽ lại toàn bộ bàn cờ, cập nhật trạng thái từng ô và highlight ô hợp lệ
+    // UC-3.15: Cập nhật giao diện đồ họa hiển thị các quân cờ hiện tại trên bàn cờ
     private void updateBoard() {
         // UC-04 bổ sung thêm
 
@@ -276,7 +278,7 @@ public class OthelloGame extends JFrame {
         }
     }
 
-    // UC-03: Thực hiện nước đi
+    // UC-3.2: Phương thức chính xử lý tọa độ nước đi do người chơi chọn
 
     private void handleMove(int row, int col) {
         if (gameEnded)
@@ -300,6 +302,8 @@ public class OthelloGame extends JFrame {
         }
     }
 
+    // UC-3.13, UC-3.28: Hàm bản lề điều phối vòng lặp, kiểm tra trạng thái bàn cờ và kích hoạt lượt AI
+    
     private void TurnBegin() {
         if (board.isGameOver()) {
             updateBoard(); // Cập nhật lần cuối để hiện kết quả
@@ -323,6 +327,7 @@ public class OthelloGame extends JFrame {
         if (player instanceof ComputerPlayer) {
             MoveCallBack callback = new MoveCallBack() {
                 @Override
+                // UC-3.23: Callback nhận tọa độ tối ưu từ luồng AI trả về để tiến hành thực thi lên giao diện
                 public void onMove(int row, int col) {
                     if (row == -1 && col == -1) { // Máy pass (dù đã check ở trên nhưng dự phòng)
                         board.switchPlayer();
@@ -356,6 +361,7 @@ public class OthelloGame extends JFrame {
     }
 
     // UC-1.15: Cập nhật nhãn hiển thị vị trí nước vừa đi và số quân ăn được
+    // UC-3.10, UC-3.26: Cập nhật các nhãn hiển thị thông tin nước đi cuối cùng của Người hoặc Máy lên UI
     private void updateLastMoveLabels() {
         Font labelFont = new Font("Arial", Font.BOLD, 16);
         lastMoveLabel.setFont(labelFont);
