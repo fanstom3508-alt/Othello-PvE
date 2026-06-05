@@ -15,6 +15,27 @@ public class ComputerPlayer extends Player {
     private final int MAXDEPTH = 5;
     private final int Pos_Infinity = 99999999;
     private final int Neg_Infinity = -99999999;
+    
+    // [23130186_TranLeMinhMan_Thêm Mới] Hàm thực hiện tìm kiếm và trả về nước đi tốt nhất tại một độ sâu cụ thể
+    private int[] searchAtDepth(Board board, int depth, List<int[]> validMoves) {
+        int bestValue = Neg_Infinity; // Khởi tạo giá trị tệ nhất
+        int[] bestMove = validMoves.get(0); // Lấy tạm nước đi đầu tiên phòng hờ
+
+        for (int[] move : validMoves) {
+            Board child = board.copy();
+            child.makeMove(move[0], move[1], color);
+            Node childNode = new Node(child, move, color);
+            
+            // Gọi thuật toán Alpha-Beta cho nước đi này.
+            // Bước tiếp theo là lượt của người chơi (min) nên maxmin = false
+            int value = alphaBeta(false, childNode, depth - 1, Neg_Infinity, Pos_Infinity);
+            if (value > bestValue) {
+                bestValue = value;
+                bestMove = move;
+            }
+        }
+        return bestMove;
+    }
 
     // UC-3.18: Kích hoạt luồng Thread ngầm tính toán nước đi cho Máy
     @Override
@@ -31,21 +52,41 @@ public class ComputerPlayer extends Player {
                 callBack.onMove(-1, -1);
                 return;
             }
-            int bestValue = Integer.MIN_VALUE;
-            int[] bestMove = null;
+            // Code của bạn cũ
+            
+//            int bestValue = Integer.MIN_VALUE;
+//            int[] bestMove = null;
+       
+//            for (int[] move : validMoves) {
+//                Board child = board.copy();
+//                child.makeMove(move[0], move[1], color);
+//                Node childNode = new Node(child, move, color);
+//                // chuyển sang min người
+//                int value = alphaBeta(false, childNode, MAXDEPTH - 1, Neg_Infinity, Pos_Infinity);
+//
+//                if (value > bestValue) {
+//                    bestValue = value;
+//                    bestMove = move;
+//                }
+//            }
+            /*
+             * Cod được phát triển tiếp (23130186_TranLeMinhMan)
+             */
+            int[] bestMoveSoFar = validMoves.get(0); // Khởi tạo mốc lưu trữ nước đi tốt nhất
 
-            for (int[] move : validMoves) {
-                Board child = board.copy();
-                child.makeMove(move[0], move[1], color);
-                Node childNode = new Node(child, move, color);
-                // chuyển sang min người
-                int value = alphaBeta(false, childNode, MAXDEPTH - 1, Neg_Infinity, Pos_Infinity);
-
-                if (value > bestValue) {
-                    bestValue = value;
-                    bestMove = move;
+            for (int d = 1; d <= MAXDEPTH; d++) {
+                // Tìm kiếm nước đi tốt nhất ở độ sâu 'd' hiện tại
+                int[] currentBestMove = searchAtDepth(board, d, validMoves);
+                
+                if (currentBestMove != null) {
+                    bestMoveSoFar = currentBestMove;
                 }
+                
+                // In ra để thấy AI đang đào sâu dần
+                System.out.println("Đã hoàn thành tìm kiếm ở độ sâu: " + d);
             }
+
+            // Đánh dấu thời gian, bộ nhớ kết thúc và in ra kết quả
             long endTime = System.nanoTime();
             long memAfter = rt.totalMemory() - rt.freeMemory();
 
@@ -55,7 +96,9 @@ public class ComputerPlayer extends Player {
             System.out.println("Executed Time : " + timeMs + " ms");
             System.out.println("Memory Used   : " + memKB + " KB");
 
-            callBack.onMove(bestMove[0], bestMove[1]);
+            // Gửi kết quả tốt nhất cuối cùng thu được cho UI
+            callBack.onMove(bestMoveSoFar[0], bestMoveSoFar[1]);
+            
         }).start();
     }
 
