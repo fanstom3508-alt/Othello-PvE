@@ -31,7 +31,7 @@ public class MainMenu extends JFrame {
             setLayout(null);
             setBackground(new Color(30, 60, 15));
 
-            // UC-03: Nút bắt đầu game - chơi với máy
+            // UC-01: Nút bắt đầu game - chơi với máy
             btnPlay = createStyledButton("Chơi với máy", new Color(46, 160, 67), new Color(36, 130, 52));
             btnPlay.setBounds(110, 350, 300, 65);
             btnPlay.addActionListener(e -> startGame());
@@ -51,7 +51,7 @@ public class MainMenu extends JFrame {
             add(btnHowTo);
         }
 
-        // UC-3: Vẽ nền, bàn cờ minh họa, tiêu đề
+        // UC-1: Vẽ nền, bàn cờ minh họa, tiêu đề
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
@@ -84,7 +84,7 @@ public class MainMenu extends JFrame {
             g2.drawString(sub, (w - fm.stringWidth(sub)) / 2, 318);
         }
 
-        // UC-3: vẽ mini board
+        // UC-1: vẽ mini board
         private void drawMiniBoard(Graphics2D g2, int panelWidth) {
             int cellSize = 38;
             int cols = 6, rows = 4;
@@ -112,7 +112,7 @@ public class MainMenu extends JFrame {
                         cellSize / 2 - 4, Color.WHITE, Color.DARK_GRAY);
         }
 
-        // UC-3: vẽ quân cờ
+        // UC-1: vẽ quân cờ
         private void drawDisc(Graphics2D g2, int cx, int cy, int r, Color fill, Color border) {
             g2.setColor(fill);
             g2.fillOval(cx - r, cy - r, r * 2, r * 2);
@@ -123,7 +123,7 @@ public class MainMenu extends JFrame {
             }
         }
 
-        // UC-3: Tạo nút với hiệu ứng hover
+        // UC-1: Tạo nút với hiệu ứng hover
         private JButton createStyledButton(String text, Color normalColor, Color hoverColor) {
             JButton btn = new JButton(text) {
                 @Override
@@ -162,8 +162,7 @@ public class MainMenu extends JFrame {
         }
     }
 
-    // UC-3.1: Khởi động ván game mới, tạo đối tượng OthelloGame và chuyển sang màn
-    // hình chơi
+    // UC-1.1: Khởi động ván game mới, tạo đối tượng OthelloGame và chuyển sang màn hình chơi
     // UC-02: Player chọn "Chơi với máy", nhập tên hiển thị và chọn màu
     private void startGame() {
         // 2.1.1 Player nhấn nút "Chơi với máy" từ màn hình chính → UC-02 được kích hoạt
@@ -209,9 +208,7 @@ public class MainMenu extends JFrame {
             break;
         }
 
-        // =========================
-        // Tiếp tục UC-02: Player chọn màu quân cờ
-        // =========================
+        // Chọn màu quân cờ
 
         int playerColor;
 
@@ -300,15 +297,32 @@ public class MainMenu extends JFrame {
         GameSession.setDifficulty(depth);
         // ----------------------------------------
 
-        // =========================
-        // UC-03: Start Game Screen
-        // =========================
+        // 2.1.11 Hệ thống hiển thị hộp thoại tóm tắt thông tin và yêu cầu xác nhận
+        String diffStr = depth == 1 ? "Dễ" : (depth == 3 ? "Trung bình" : "Khó");
+        String colorStr = playerColor == Board.BLACK ? "Đen (Đi trước)" : "Trắng (Đi sau)";
+        String summary = String.format("Xác nhận thông tin ván đấu:\n\n" +
+                                       "  • Người chơi: %s\n" +
+                                       "  • Màu quân: %s\n" +
+                                       "  • Độ khó: %s\n\n" +
+                                       "Bắt đầu ván đấu?",
+                                       playerName, colorStr, diffStr);
 
-        // Đóng MainMenu hiện tại
+        int confirmStart = JOptionPane.showConfirmDialog(
+                this, 
+                summary, 
+                "Xác nhận thông tin", 
+                JOptionPane.YES_NO_OPTION, 
+                JOptionPane.INFORMATION_MESSAGE);
+
+        // 2.7.1 Luồng thay thế - Player từ chối xác nhận thông tin
+        if (confirmStart != JOptionPane.YES_OPTION) {
+            return;
+        }
+
+        // 2.1.12 Đóng MainMenu và chuyển sang UC-03 (Start Game Screen)
         dispose();
 
-        // 2.1.11 Hệ thống tự động gán màu quân còn lại cho đối thủ máy (AI) (trong constructor OthelloGame). 
-        // Đóng MainMenu và chuyển sang UC-03.
+        // 2.1.13 Hệ thống tự động gán màu quân còn lại cho đối thủ máy (AI) (trong constructor OthelloGame).
         SwingUtilities.invokeLater(() -> new OthelloGame(playerColor).setVisible(true));
     }
 
