@@ -15,7 +15,7 @@ public class Board {
         restart();
     }
 
-    // UC-3.4, UC-3.14 restart: Xóa toàn bộ bàn cờ, đặt 4 quân ban đầu ở giữa, set lượt đi về BLACK
+    // UC-1.4, UC-1.14: Xóa toàn bộ bàn cờ, đặt 4 quân ban đầu ở giữa, set lượt đi về BLACK
     public void restart() {
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
@@ -29,12 +29,12 @@ public class Board {
         currentPlayer = BLACK;
     }
     
-    // UC-3.20: Trả về trạng thái của ô tại vị trí hàng row, cột col
+    // UC-1.20: Trả về trạng thái của ô tại vị trí hàng row, cột col
     public int getCell(int row, int col) {
         return board[row][col];
     }
 
-    // UC-3.17, UC-3.25: Trả về màu của người chơi đang có lượt đi
+    // UC-1.17, UC-1.25: Trả về màu của người chơi đang có lượt đi
     public int getCurrentPlayer() {
         return currentPlayer;
     }
@@ -75,7 +75,7 @@ public class Board {
         return getFlippedCells(row, col, player).size();
     }
 
-    // Check xem có phải là một nước đi hơp lệ không
+    // UC-1.22 Kiểm tra nước đi tại vị trí row, col có hợp lệ với player không (cho các ô trống), UC 3 implement
     public boolean isValidMove(int row, int col, int player) {
         return getFlippableCount(row, col, player) > 0;
     }
@@ -92,7 +92,7 @@ public class Board {
         return true;
     }
 
-    // UC3.22/UC-04: Kiểm tra nước đi tại vị trí row, col có hợp lệ với player không (UC4 implement)
+    //UC-03: Kiểm tra nước đi tại vị trí row, col có hợp lệ với player không (UC3 implement)
     // trả về danh sách các nước đi hợp lệ của người chơi
     public List<int[]> getValidMoves(int player) {
         List<int[]> moves = new ArrayList<>();
@@ -111,7 +111,7 @@ public class Board {
         return getValidMoves(BLACK).isEmpty() && getValidMoves(WHITE).isEmpty();
     }
 
-    // UC-3.18/UC-04: Đếm và trả về số quân đen và trắng hiện tại trên bàn cờ
+    // UC-1.18/UC-04:Đếm và trả về số quân đen và trắng hiện tại trên bàn cờ
     public int[] getScore() {
         int[] score = new int[2];
         int black = 0, white = 0;
@@ -126,7 +126,7 @@ public class Board {
         return score;
     }
 
-    // UC-04: Dùng để AI tính toán nước đi (copy bàn cờ)
+    // UC-03: Dùng để AI tính toán nước đi (copy bàn cờ)
     public Board copy() {
         Board copy = new Board();
         for (int i = 0; i < 8; i++) {
