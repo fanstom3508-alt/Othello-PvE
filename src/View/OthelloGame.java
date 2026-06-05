@@ -72,7 +72,7 @@ public class OthelloGame extends JFrame {
     }
 
     // UC-1.9, UC-1.26, UC-1.19: Trả về tên hiển thị của người chơi theo màu quân (Bạn hoặc Máy)
-    // UC-3.11: Lấy chuỗi tên hiển thị của người chơi dựa trên màu quân cờ hiện tại
+    // UC-3.11: Lấy tên hiển thị của người chơi dựa trên ID (màu cờ)
     private String getPlayerName(int color) {
         if (color == humanColor) {
             return (color == Board.BLACK) ? "Đen (Bạn)" : "Trắng (Bạn)";
@@ -245,7 +245,7 @@ public class OthelloGame extends JFrame {
     }
 
     // UC-1.16: Vẽ lại toàn bộ bàn cờ, cập nhật trạng thái từng ô và highlight ô hợp lệ
-    // UC-3.15: Cập nhật giao diện đồ họa hiển thị các quân cờ hiện tại trên bàn cờ
+    // UC-3.15: Cập nhật lại toàn bộ giao diện (lật cờ) và điểm số trên màn hình
     private void updateBoard() {
         // UC-04 bổ sung thêm
 
@@ -278,7 +278,7 @@ public class OthelloGame extends JFrame {
         }
     }
 
-    // UC-3.2: Phương thức chính xử lý tọa độ nước đi do người chơi chọn
+    // UC-3.2: Hàm chính xử lý logic nước đi sau khi người chơi click
 
     private void handleMove(int row, int col) {
         if (gameEnded)
@@ -302,7 +302,7 @@ public class OthelloGame extends JFrame {
         }
     }
 
-    // UC-3.13, UC-3.28: Hàm bản lề điều phối vòng lặp, kiểm tra trạng thái bàn cờ và kích hoạt lượt AI
+    // UC-3.13, UC-3.36: Hàm bản lề điều phối vòng lặp, kiểm tra trạng thái bàn cờ và kích hoạt lượt AI
     
     private void TurnBegin() {
         if (board.isGameOver()) {
@@ -344,7 +344,7 @@ public class OthelloGame extends JFrame {
                     lastMoveFlipped = flippedCount;
                     lastMovePlayer = curPlayer;
 
-                    // Dùng SwingUtilities để update UI từ thread AI
+                 // UC-3.33: Bọc tác vụ thay đổi UI để trả quyền điều khiển về luồng UI chính
                     SwingUtilities.invokeLater(() -> {
                         updateLastMoveLabels();
                         board.switchPlayer();
@@ -361,7 +361,7 @@ public class OthelloGame extends JFrame {
     }
 
     // UC-1.15: Cập nhật nhãn hiển thị vị trí nước vừa đi và số quân ăn được
-    // UC-3.10, UC-3.26: Cập nhật các nhãn hiển thị thông tin nước đi cuối cùng của Người hoặc Máy lên UI
+    // UC-3.10, UC-3.34: Cập nhật giao diện hiển thị thông tin nước đi cuối cùng
     private void updateLastMoveLabels() {
         Font labelFont = new Font("Arial", Font.BOLD, 16);
         lastMoveLabel.setFont(labelFont);
