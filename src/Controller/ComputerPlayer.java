@@ -16,7 +16,7 @@ public class ComputerPlayer extends Player {
     private final int Pos_Infinity = 99999999;
     private final int Neg_Infinity = -99999999;
 
-    // UC-3.18: Kích hoạt một luồng (Thread) riêng biệt để AI bắt đầu tính toán tìm kiếm nước đi tối ưu mà không làm treo UI
+    // UC-3.18: Kích hoạt luồng Thread ngầm tính toán nước đi cho Máy
     @Override
     public void makeMove(Board board, MoveCallBack callBack) {
         new Thread(() -> {
@@ -96,7 +96,7 @@ public class ComputerPlayer extends Player {
         }
     }
 
-    // UC-3.22: Thuật toán đệ quy tìm kiếm Minimax kết hợp cắt tỉa Alpha-Beta để lượng giá ma trận giả lập
+    // UC-3.22: Thuật toán Minimax kết hợp Alpha-Beta Pruning tìm độ sâu tối ưu
     public int alphaBeta(boolean maxmin, Node state, int depth, int alpha, int beta) {
         if (depth == 0 || state.getBoard().isGameOver()) {
             return heuristic(state);
@@ -146,6 +146,7 @@ public class ComputerPlayer extends Player {
         return this.color == Board.WHITE ? Board.BLACK : Board.WHITE;
     }
 
+    // UC-3.23: Hàm lượng giá đánh giá mức độ lợi thế của trạng thái bàn cờ
     private int heuristic(Node state) {
         Board board = state.getBoard();
         int[] score = board.getScore();
