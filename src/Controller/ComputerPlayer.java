@@ -81,17 +81,27 @@ public class ComputerPlayer extends Player {
              */
             int[] bestMoveSoFar = validMoves.get(0); // Khởi tạo mốc lưu trữ nước đi tốt nhất
 
-            for (int d = 1; d <= MAXDEPTH; d++) {
-                // Tìm kiếm nước đi tốt nhất ở độ sâu 'd' hiện tại
-            	// Truyền startTimeMs vào hàm searchAtDepth
-            	int[] currentBestMove = searchAtDepth(board, d, validMoves, startTimeMs);
-                
-                if (currentBestMove != null) {
-                    bestMoveSoFar = currentBestMove;
-                }
-                
-                // In ra để thấy AI đang đào sâu dần
-                System.out.println("Đã hoàn thành tìm kiếm ở độ sâu: " + d);
+            //[23130186_TranLeMinhMan_Thêm Mới] Bắt ngoại lệ TimeoutException hoặc xử lý flag dừng ở hàm makeMove
+            try {
+            // Vòng lặp Iterative Deepening
+	            for (int d = 1; d <= MAXDEPTH; d++) {
+	                // Tìm kiếm nước đi tốt nhất ở độ sâu 'd' hiện tại
+	            	// Truyền startTimeMs vào hàm searchAtDepth
+	            	int[] currentBestMove = searchAtDepth(board, d, validMoves, startTimeMs);
+	                
+	            	// Chỉ khi tìm kiếm TRỌN VẸN độ sâu 'd' mà không bị ngắt, lệnh gán này mới được chạy
+	                if (currentBestMove != null) {
+	                    bestMoveSoFar = currentBestMove;
+	                }
+	                
+	                // In ra để thấy AI đang đào sâu dần
+	                System.out.println("Đã hoàn thành tìm kiếm ở độ sâu: " + d);
+	            }
+            } catch (SearchTimeoutException e) {
+                // Đã bị ngắt do lố 1.8 giây!
+                // Vòng lặp for bị phá vỡ ngay lập tức. Các hàm đệ quy sâu bên trong đều dừng lại.
+                System.out.println("Timeout Đã quá 1.8 giây! Dừng khẩn cấp thuật toán đệ quy.");
+                System.out.println("Đang lấy kết quả tốt nhất từ độ sâu hoàn thành gần nhất để đánh");
             }
 
             // Đánh dấu thời gian, bộ nhớ kết thúc và in ra kết quả
