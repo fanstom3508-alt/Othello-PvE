@@ -295,6 +295,45 @@ public class ComputerPlayerTest {
             return null;
         }
     }
+    // 23130186_TranLeMinhMan_PhatTrienTiep Kiểm tra tính đúng đắn của Iterative Deepening
+    @Test
+    @DisplayName("Kiểm tra tính đúng đắn của Iterative Deepening (Regression Test)")
+    public void testMakeMove_IterativeDeepening_Correctness() throws InterruptedException {
+        
+        // 1. Lấy danh sách các nước đi hợp lệ cần phải có để đối chiếu
+        List<int[]> validMoves = board.getValidMoves(Board.BLACK);
+        assertFalse(validMoves.isEmpty(), "Bàn cờ ban đầu phải có nước đi hợp lệ cho Đen");
+
+        // 2. Dùng CountDownLatch để hứng kết quả từ luồng ngầm
+        CountDownLatch latch = new CountDownLatch(1);
+        int[] moveResult = {-1, -1};
+
+        // 3. Kích hoạt thuật toán Iterative Deepening
+        aiBlack.makeMove(board, new MoveCallBack() {
+            @Override
+            public void onMove(int row, int col) {
+                moveResult[0] = row;
+                moveResult[1] = col;
+                latch.countDown(); // Đánh dấu đã tính xong
+            }
+        });
+
+        // Đợi AI chạy xong (Cho khoảng 5 giây thoải mái vì đây không phải test hiệu năng)
+        boolean finished = latch.await(5000, TimeUnit.MILLISECONDS);
+
+        // các tiêu chí kiểm định assertions
+        
+        // Đảm bảo AI chạy xong trọn vẹn thuật toán mà không bị crash hay kẹt vòng lặp vô hạn
+        assertTrue(finished, "LỖI: AI bị kẹt trong vòng lặp Iterative Deepening!");
+        
+        // Đảm bảo AI không bị mất lượt (trả về -1, -1) khi bàn cờ rõ ràng có nước đi
+        assertNotEquals(-1, moveResult[0], "LỖI: AI trả về pass lượt dù có nước đi!");
+        assertNotEquals(-1, moveResult[1], "LỖI: AI trả về pass lượt dù có nước đi!");
+
+        // quan trọng: Đảm bảo kết quả trả về của Iterative Deepening là đúng luật
+        boolean isMoveValid = board.isValidMove(moveResult[0], moveResult[1], Board.BLACK);
+        assertTrue(isMoveValid, "LỖI LOGIC: Nước đi (" + moveResult[0] + ", " + moveResult[1] + ") hoàn toàn sai luật Othello!");
+    }
     
     // Stress test cho deepening structure_23130186_TranLeMinhMan_PhatTrienTiep
     @Test
@@ -333,14 +372,14 @@ public class ComputerPlayerTest {
 
         // CÁC TIÊU CHÍ KIỂM ĐỊNH (ASSERTIONS) 
         // Kiểm tra 1: Không bị treo (phải trả về kết quả trước khi timeout chờ 2.5 giây của Test)
-        assertTrue(finishedWithoutHanging, "LỖI MẠNG: AI đã bị treo luồng hoặc chạy quá 2.5 giây!");
+        assertTrue(finishedWithoutHanging, "Lỗi mạng: AI đã bị treo luồng hoặc chạy quá 2.5 giây!");
         
         // Kiểm tra 2: Thời gian thực thi thực tế của AI phải nhỏ hơn mức 2 giây quy định (VD: <= 1900ms)
-        assertTrue(timeTaken < 2000, "LỖI HIỆU NĂNG: AI chạy mất " + timeTaken + " ms, VƯỢT QUÁ QUY ĐỊNH 2 GIÂY!");
+        assertTrue(timeTaken < 2000, "Lỗi hiệu năng: AI chạy mất " + timeTaken + " ms, VƯỢT QUÁ QUY ĐỊNH 2 GIÂY!");
         
         // Kiểm tra 3: Nước đi AI trả về PHẢI là nước đi hợp lệ
         assertTrue(board.isValidMove(moveResult[0], moveResult[1], 1), 
-                "LỖI LOGIC: Nước đi trả về (" + moveResult[0] + ", " + moveResult[1] + ") là sai luật!");
+                "Lỗi logic: Nước đi trả về (" + moveResult[0] + ", " + moveResult[1] + ") là sai luật!");
     }
 }
     
