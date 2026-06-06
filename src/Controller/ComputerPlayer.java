@@ -12,7 +12,7 @@ public class ComputerPlayer extends Player {
         super(color);
     }
 
-    private int MAXDEPTH = Controller.GameSession.getDifficulty();
+    private final int MAXDEPTH = 5;
     private final int Pos_Infinity = 99999999;
     private final int Neg_Infinity = -99999999;
 
