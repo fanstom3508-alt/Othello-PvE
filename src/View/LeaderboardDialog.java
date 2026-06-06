@@ -50,6 +50,7 @@ public class LeaderboardDialog extends JDialog {
         centerPanel.setBorder(BorderFactory.createEmptyBorder(10, 15, 5, 15));
         
         // ---- Khởi tạo thanh công cụ lọc (Filter ComboBox) ----
+     // [5.1.6] Người chơi nhấp chọn thay đổi tiêu chí lọc trên thanh công cụ
         JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         filterPanel.add(new JLabel("Sắp xếp theo: "));
         String[] filterOptions = {
@@ -60,7 +61,7 @@ public class LeaderboardDialog extends JDialog {
         };
         filterComboBox = new JComboBox<>(filterOptions);
         
-        // [5.1.6] Người chơi nhấp chọn thay đổi tiêu chí lọc trên thanh công cụ
+        
         filterComboBox.addActionListener(e -> {
             int selectedIndex = filterComboBox.getSelectedIndex();
             String criterion = "SCORE";
