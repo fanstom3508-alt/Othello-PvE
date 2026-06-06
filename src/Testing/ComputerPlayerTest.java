@@ -20,12 +20,16 @@ public class ComputerPlayerTest {
     private ComputerPlayer aiBlack; // AI là Đen
     private ComputerPlayer aiWhite; // AI là Trắng
     private Board board;
+    private long startTimeMs;
  
     @BeforeEach
-    void setUp() {
+   public void setUp() {
         aiBlack = new ComputerPlayer(Board.BLACK);
         aiWhite = new ComputerPlayer(Board.WHITE);
         board = new Board();
+        
+        // Cấp một mốc thời gian mới tinh trước khi bất kỳ bài test nào chạy
+        startTimeMs = System.currentTimeMillis();
     }
  
     // getOppColor()
@@ -94,16 +98,19 @@ public class ComputerPlayerTest {
     @DisplayName("alphaBeta: depth=0 trả về heuristic (không crash)")
     void alphaBeta_DepthZero_ReturnsHeuristic() {
         Node node = new Node(board, new int[]{2, 3}, Board.BLACK);
-        int val = aiBlack.alphaBeta(true, node, 0, -99999999, 99999999);
+        int val = aiBlack.alphaBeta(true, node, 0, -99999999, 99999999, startTimeMs);
         assertTrue(val > Integer.MIN_VALUE && val < Integer.MAX_VALUE);
     }
  
     @Test
     @DisplayName("alphaBeta: kết quả bằng minimax ở cùng trạng thái và depth nhỏ")
     void alphaBeta_SameResultAsMinimax() {
+    	// Cấp cho hàm một mốc thời gian hiện tại để nó không bị lỗi thiếu tham số
+        long startTimeMs = System.currentTimeMillis();
+        
         Node node = new Node(board, new int[]{2, 3}, Board.BLACK);
         int minimaxVal = aiBlack.minimax(true, node, 3);
-        int alphaBetaVal = aiBlack.alphaBeta(true, node, 3, -99999999, 99999999);
+        int alphaBetaVal = aiBlack.alphaBeta(true, node, 3, -99999999, 99999999, startTimeMs);
         assertEquals(minimaxVal, alphaBetaVal,
             "alphaBeta và minimax phải cho cùng kết quả (alphaBeta chỉ tối ưu tốc độ)");
     }
@@ -112,8 +119,8 @@ public class ComputerPlayerTest {
     @DisplayName("alphaBeta: depth cao hơn cho kết quả khác depth thấp hơn")
     void alphaBeta_DifferentDepthsDifferentResults() {
         Node node = new Node(board, new int[]{2, 3}, Board.BLACK);
-        int val1 = aiBlack.alphaBeta(true, node, 1, -99999999, 99999999);
-        int val3 = aiBlack.alphaBeta(true, node, 3, -99999999, 99999999);
+        int val1 = aiBlack.alphaBeta(true, node, 1, -99999999, 99999999, startTimeMs);
+        int val3 = aiBlack.alphaBeta(true, node, 3, -99999999, 99999999, startTimeMs);
         // Chỉ cần cả 2 đều trả về giá trị hợp lệ, không crash
         assertTrue(val1 > Integer.MIN_VALUE && val1 < Integer.MAX_VALUE);
         assertTrue(val3 > Integer.MIN_VALUE && val3 < Integer.MAX_VALUE);
@@ -124,8 +131,8 @@ public class ComputerPlayerTest {
     void alphaBeta_PruningStillReturnsValue() {
         Node node = new Node(board, new int[]{2, 3}, Board.BLACK);
         // alpha = beta = 0 → sẽ cắt tỉa ngay
-        int val = aiBlack.alphaBeta(true, node, 3, 0, 0);
-        assertTrue(val > Integer.MIN_VALUE && val < Integer.MAX_VALUE);
+        int val = aiBlack.alphaBeta(true, node, 3, 0, 0, startTimeMs);
+        assertTrue(val > Integer.MIN_VALUE && val < Integer.MAX_VALUE );
     }
  
     @Test
@@ -136,7 +143,7 @@ public class ComputerPlayerTest {
             for (int j = 0; j < 8; j++)
                 setCell(fullBoard, i, j, Board.BLACK);
         Node node = new Node(fullBoard, new int[]{0, 0}, Board.BLACK);
-        int val = aiBlack.alphaBeta(true, node, 5, -99999999, 99999999);
+        int val = aiBlack.alphaBeta(true, node, 5, -99999999, 99999999, startTimeMs);
         assertTrue(val > Integer.MIN_VALUE && val < Integer.MAX_VALUE);
     }
  
@@ -146,7 +153,7 @@ public class ComputerPlayerTest {
         Board b = setupBoardWhiteOnly();
         if (b == null) return;
         Node node = new Node(b, new int[]{0, 0}, Board.WHITE);
-        assertDoesNotThrow(() -> aiWhite.alphaBeta(true, node, 2, -99999999, 99999999));
+        assertDoesNotThrow(() -> aiWhite.alphaBeta(true, node, 2, -99999999, 99999999, startTimeMs));
     }
  
     // heuristic() — kiểm tra gián tiếp qua alphaBeta(depth=0)
@@ -161,8 +168,8 @@ public class ComputerPlayerTest {
         Node nodeWithCorner = new Node(withCorner, new int[]{0, 0}, Board.BLACK);
         Node nodeWithout   = new Node(board,       new int[]{2, 3}, Board.BLACK);
  
-        int valWith    = aiBlack.alphaBeta(true, nodeWithCorner, 0, -99999999, 99999999);
-        int valWithout = aiBlack.alphaBeta(true, nodeWithout,    0, -99999999, 99999999);
+        int valWith    = aiBlack.alphaBeta(true, nodeWithCorner, 0, -99999999, 99999999, startTimeMs);
+        int valWithout = aiBlack.alphaBeta(true, nodeWithout,    0, -99999999, 99999999, startTimeMs);
  
         assertTrue(valWith > valWithout, "Chiếm góc phải cho heuristic cao hơn");
     }
@@ -176,8 +183,8 @@ public class ComputerPlayerTest {
         Node nodeOppCorner = new Node(opponentCorner, new int[]{0, 0}, Board.WHITE);
         Node nodeNormal    = new Node(board,           new int[]{2, 3}, Board.BLACK);
  
-        int valOpp    = aiBlack.alphaBeta(true, nodeOppCorner, 0, -99999999, 99999999);
-        int valNormal = aiBlack.alphaBeta(true, nodeNormal,    0, -99999999, 99999999);
+        int valOpp    = aiBlack.alphaBeta(true, nodeOppCorner, 0, -99999999, 99999999, startTimeMs);
+        int valNormal = aiBlack.alphaBeta(true, nodeNormal,    0, -99999999, 99999999, startTimeMs);
  
         assertTrue(valOpp < valNormal, "Đối thủ chiếm góc phải cho heuristic thấp hơn");
     }
@@ -195,7 +202,7 @@ public class ComputerPlayerTest {
                 setCell(dominated, i, j, Board.WHITE);
  
         Node node = new Node(dominated, new int[]{0, 0}, Board.BLACK);
-        int val = aiBlack.alphaBeta(true, node, 0, -99999999, 99999999);
+        int val = aiBlack.alphaBeta(true, node, 0, -99999999, 99999999, startTimeMs);
         assertTrue(val > 0, "AI nhiều quân hơn → heuristic phải dương");
     }
  
@@ -204,7 +211,7 @@ public class ComputerPlayerTest {
     void heuristic_BalancedBoard_NearZero() {
         // Trạng thái ban đầu: 2 Đen, 2 Trắng → khá cân bằng
         Node node = new Node(board, new int[]{2, 3}, Board.BLACK);
-        int val = aiBlack.alphaBeta(true, node, 0, -99999999, 99999999);
+        int val = aiBlack.alphaBeta(true, node, 0, -99999999, 99999999, startTimeMs);
         // Không nhất thiết = 0 vì còn tính corner/edge/mobility, nhưng không quá lớn
         assertTrue(Math.abs(val) < 500, "Bàn cờ cân bằng → heuristic không quá lớn");
     }

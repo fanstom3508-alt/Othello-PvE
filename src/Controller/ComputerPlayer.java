@@ -12,12 +12,15 @@ public class ComputerPlayer extends Player {
         super(color);
     }
 
-    private final int MAXDEPTH = 5;
+    private final int MAXDEPTH = 10;
+    // [23130186_TranLeMinhMan_Thêm Mới] Exception dùng để báo hiệu khi quá thời gian 1.8s
+    public static class SearchTimeoutException extends RuntimeException {}
     private final int Pos_Infinity = 99999999;
     private final int Neg_Infinity = -99999999;
     
     // [23130186_TranLeMinhMan_Thêm Mới] Hàm thực hiện tìm kiếm và trả về nước đi tốt nhất tại một độ sâu cụ thể
-    private int[] searchAtDepth(Board board, int depth, List<int[]> validMoves) {
+    // [23130186_TranLeMinhMan_Cập nhật] Thêm tham số long startTimeMs
+    	private int[] searchAtDepth(Board board, int depth, List<int[]> validMoves, long startTimeMs) {
         int bestValue = Neg_Infinity; // Khởi tạo giá trị tệ nhất
         int[] bestMove = validMoves.get(0); // Lấy tạm nước đi đầu tiên phòng hờ
 
@@ -28,7 +31,8 @@ public class ComputerPlayer extends Player {
             
             // Gọi thuật toán Alpha-Beta cho nước đi này.
             // Bước tiếp theo là lượt của người chơi (min) nên maxmin = false
-            int value = alphaBeta(false, childNode, depth - 1, Neg_Infinity, Pos_Infinity);
+            // [23130186_TranLeMinhMan_Cập nhật] Truyền startTimeMs xuống cho alphaBeta
+            int value = alphaBeta(false, childNode, depth - 1, Neg_Infinity, Pos_Infinity, startTimeMs);
             if (value > bestValue) {
                 bestValue = value;
                 bestMove = move;
@@ -46,6 +50,9 @@ public class ComputerPlayer extends Player {
 
             long memBefore = rt.totalMemory() - rt.freeMemory();
             long startTime = System.nanoTime();
+            
+            //[23130186_TranLeMinhMan_Thêm Mới] Lấy thời gian bắt đầu bằng mili-giây
+            long startTimeMs = System.currentTimeMillis();
 
             List<int[]> validMoves = board.getValidMoves(color);
             if (validMoves.isEmpty()) {
@@ -70,13 +77,14 @@ public class ComputerPlayer extends Player {
 //                }
 //            }
             /*
-             * Cod được phát triển tiếp (23130186_TranLeMinhMan)
+             * [23130186_TranLeMinhMan_Thêm Mới] Code được phát triển tiếp 
              */
             int[] bestMoveSoFar = validMoves.get(0); // Khởi tạo mốc lưu trữ nước đi tốt nhất
 
             for (int d = 1; d <= MAXDEPTH; d++) {
                 // Tìm kiếm nước đi tốt nhất ở độ sâu 'd' hiện tại
-                int[] currentBestMove = searchAtDepth(board, d, validMoves);
+            	// Truyền startTimeMs vào hàm searchAtDepth
+            	int[] currentBestMove = searchAtDepth(board, d, validMoves, startTimeMs);
                 
                 if (currentBestMove != null) {
                     bestMoveSoFar = currentBestMove;
@@ -140,15 +148,23 @@ public class ComputerPlayer extends Player {
     }
 
     // UC-3.22: Thuật toán Minimax kết hợp Alpha-Beta Pruning tìm độ sâu tối ưu
-    public int alphaBeta(boolean maxmin, Node state, int depth, int alpha, int beta) {
+    // [23130186_TranLeMinhMan_Cập nhật] Thêm tham số long startTimeMs
+    public int alphaBeta(boolean maxmin, Node state, int depth, int alpha, int beta, long startTimeMs) {
+    	// [23130186_TranLeMinhMan_Cập nhật] KIỂM TRA THỜI GIAN: Nếu lố 1800ms (1.8s) thì ném lỗi ngắt ngay lập tức
+    	if (System.currentTimeMillis() - startTimeMs > 1800) {
+            throw new SearchTimeoutException();
+        }
+    	
         if (depth == 0 || state.getBoard().isGameOver()) {
             return heuristic(state);
         }
+        
         int curColor = maxmin ? color : getOppColor();
         List<int[]> posMove = state.getBoard().getValidMoves(curColor);
 
         if (posMove.isEmpty()) {
-            return alphaBeta(!maxmin, state, depth - 1, alpha, beta);
+        	// [23130186_TranLeMinhMan_Cập nhật]  thêm startTimeMs vào đệ quy
+        	return alphaBeta(!maxmin, state, depth - 1, alpha, beta, startTimeMs);
         }
         if (maxmin) {    // MAX
             int temp = -99999999;
@@ -157,7 +173,8 @@ public class ComputerPlayer extends Player {
                 childBoard.makeMove(move[0], move[1], curColor);
                 Node child = new Node(childBoard, move, curColor);
 
-                temp = Math.max(temp, alphaBeta(false, child, depth - 1, alpha, beta));
+             // [23130186_TranLeMinhMan_Cập nhật] Thêm startTimeMs vào đệ quy
+                temp = Math.max(temp, alphaBeta(false, child, depth - 1, alpha, beta, startTimeMs));
                 // cập nhật alpha
                 alpha = Math.max(alpha, temp);
                 // cắt
@@ -173,7 +190,8 @@ public class ComputerPlayer extends Player {
                 childBoard.makeMove(move[0], move[1], curColor);
                 Node child = new Node(childBoard, move, curColor);
 
-                temp = Math.min(temp, alphaBeta(true, child, depth - 1, alpha, beta));
+             // [23130186_TranLeMinhMan_Cập nhật] Thêm startTimeMs vào đệ quy
+                temp = Math.min(temp, alphaBeta(true, child, depth - 1, alpha, beta, startTimeMs));
                 // cập nhật alpha
                 beta = Math.min(beta, temp);
                 // cắt
