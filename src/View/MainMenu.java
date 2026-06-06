@@ -254,9 +254,8 @@ public class MainMenu extends JFrame {
         GameSession.setPlayerName(playerName);
         GameSession.setPlayerColor(playerColor);
 
-        // --- TÍNH NĂNG MỞ RỘNG: Chọn độ khó ---
+        // Tác giả: Phan Quang Huy – UC-02 Extension: Chọn độ khó AI
         int depth;
-        // loop để xử lý chọn độ khó
         while (true) {
             // 2.1.9 Hệ thống hiển thị hộp thoại chọn độ khó AI (Dễ, Trung bình, Khó). Player chọn độ khó.
             int diffChoice = JOptionPane.showOptionDialog(
@@ -292,11 +291,11 @@ public class MainMenu extends JFrame {
             else depth = 5;
             break;
         }
-        
+
         // 2.1.10 Hệ thống lưu độ khó vào GameSession.
         GameSession.setDifficulty(depth);
-        // ----------------------------------------
 
+        // Tác giả: Phan Quang Huy – UC-02 Extension: Hộp thoại tóm tắt xác nhận thông tin ván đấu
         // 2.1.11 Hệ thống hiển thị hộp thoại tóm tắt thông tin và yêu cầu xác nhận
         String diffStr = depth == 1 ? "Dễ" : (depth == 3 ? "Trung bình" : "Khó");
         String colorStr = playerColor == Board.BLACK ? "Đen (Đi trước)" : "Trắng (Đi sau)";
@@ -308,10 +307,10 @@ public class MainMenu extends JFrame {
                                        playerName, colorStr, diffStr);
 
         int confirmStart = JOptionPane.showConfirmDialog(
-                this, 
-                summary, 
-                "Xác nhận thông tin", 
-                JOptionPane.YES_NO_OPTION, 
+                this,
+                summary,
+                "Xác nhận thông tin",
+                JOptionPane.YES_NO_OPTION,
                 JOptionPane.INFORMATION_MESSAGE);
 
         // 2.7.1 Luồng thay thế - Player từ chối xác nhận thông tin
