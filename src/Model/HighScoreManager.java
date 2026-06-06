@@ -93,7 +93,8 @@ public class HighScoreManager {
         }
     }
 
-    // UC-04: Thêm điểm mới — mỗi tên chỉ lưu 1 bản ghi, cập nhật nếu điểm cao hơn (BRule-09)
+    // UC-04: Thêm điểm mới — mỗi tên chỉ lưu 1 bản ghi, cập nhật nếu điểm cao hơn
+    // (BRule-09)
     public static boolean addScore(String playerName, int score) {
         List<ScoreEntry> scores = loadScores();
 
@@ -123,7 +124,7 @@ public class HighScoreManager {
         return scores.contains(newEntry);
     }
 
-    // UC-05 5.1.1, 5.1.2: Đọc dữ liệu từ file và trả về top 10 đã sắp xếp giảm dần
+    // 5.1.1, 5.1.2: Đọc dữ liệu từ file và trả về top 10 đã sắp xếp giảm dần
     public static List<ScoreEntry> getTopScores() {
         List<ScoreEntry> scores = loadScores();
         // Giới hạn 10
@@ -133,7 +134,7 @@ public class HighScoreManager {
         return scores;
     }
 
-    // UC-05 5.1.4: Tìm điểm cao nhất của một người chơi cụ thể
+    // 5.1.4: Tìm điểm cao nhất của một người chơi cụ thể
     public static int getBestScore(String playerName) {
         List<ScoreEntry> scores = loadScores();
         int best = -1;
