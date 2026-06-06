@@ -277,8 +277,8 @@ public class MainMenu extends JFrame {
                         JOptionPane.YES_NO_OPTION);
 
                 if (confirm == JOptionPane.YES_OPTION) {
-                    // Nếu [Có]: depth = 5
-                    depth = 5;
+                    // Nếu [Có]: depth = 10
+                    depth = 10;
                     break;
                 } else {
                     // Nếu [Không]: kết thúc use case (return).
@@ -286,9 +286,9 @@ public class MainMenu extends JFrame {
                 }
             }
 
-            if (diffChoice == 0) depth = 1;
-            else if (diffChoice == 1) depth = 3;
-            else depth = 5;
+            if (diffChoice == 0) depth = 3;
+            else if (diffChoice == 1) depth = 5;
+            else depth = 10;
             break;
         }
 
@@ -297,7 +297,7 @@ public class MainMenu extends JFrame {
 
         // Tác giả: Phan Quang Huy – UC-02 Extension: Hộp thoại tóm tắt xác nhận thông tin ván đấu
         // 2.1.11 Hệ thống hiển thị hộp thoại tóm tắt thông tin và yêu cầu xác nhận
-        String diffStr = depth == 1 ? "Dễ" : (depth == 3 ? "Trung bình" : "Khó");
+        String diffStr = depth == 3 ? "Dễ" : (depth == 5 ? "Trung bình" : "Khó");
         String colorStr = playerColor == Board.BLACK ? "Đen (Đi trước)" : "Trắng (Đi sau)";
         String summary = String.format("Xác nhận thông tin ván đấu:\n\n" +
                                        "  • Người chơi: %s\n" +
