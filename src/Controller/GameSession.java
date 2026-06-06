@@ -24,7 +24,7 @@ public class GameSession {
 	        GameSession.playerColor = playerColor;
 	    }
 
-	    private static int difficulty = 5; // Default: Khó (depth = 5)
+	    private static int difficulty = 10; // Default: Khó (depth = 10)
 
 	    public static int getDifficulty() {
 	        return difficulty;
