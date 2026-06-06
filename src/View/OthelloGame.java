@@ -47,8 +47,7 @@ public class OthelloGame extends JFrame {
         this.humanColor = chosenHumanColor;
         int computerColor = (humanColor == Board.BLACK) ? Board.WHITE : Board.BLACK;
 
-        // UC-01/UC-05: Lấy tên người chơi từ GameSession (do UC-01 thiết lập)
-
+        // 2.1.12 Use case kết thúc. OthelloGame constructor đọc GameSession để lấy thông tin Player.
         String name = GameSession.getPlayerName();
         if (name != null && !name.trim().isEmpty()) {
             this.playerName = name.trim();
