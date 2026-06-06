@@ -6,6 +6,8 @@ import org.junit.jupiter.api.DisplayName;
 import Controller.*;
 import Model.*;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -286,4 +288,52 @@ public class ComputerPlayerTest {
             return null;
         }
     }
+    
+    // Stress test cho deepening structure_23130186_TranLeMinhMan_PhatTrienTiep
+    @Test
+    public void testMakeMove_StressTest_TimeConstraint() throws InterruptedException {
+        // 1. Khởi tạo một bàn cờ trống (hoặc có thể setup một thế cờ phức tạp tùy ý)
+        Board board = new Board(); 
+        
+        // 2. Khởi tạo AI (giả sử AI cầm cờ Đen = 1)
+        ComputerPlayer aiPlayer = new ComputerPlayer(1);
+        
+        // 3. Sử dụng CountDownLatch để luồng Test chờ luồng AI tính toán xong
+        CountDownLatch latch = new CountDownLatch(1);
+        
+        // 4. Mảng tạm để hứng kết quả trả về từ callBack
+        int[] moveResult = {-1, -1};
+        
+        // 5. BẮT ĐẦU BẤM GIỜ TỪ BÊN NGOÀI BÀI TEST
+        long startTime = System.currentTimeMillis();
+        
+        aiPlayer.makeMove(board, new MoveCallBack() {
+            @Override
+            public void onMove(int row, int col) {
+                moveResult[0] = row;
+                moveResult[1] = col;
+                latch.countDown(); // Đánh dấu là AI đã tính xong, mở khóa cho bài Test đi tiếp
+            }
+        });
+        
+        // 6. Chờ tối đa 2.5 giây. Nếu sau 2.5 giây mà CountdownLatch chưa mở -> Bị treo luồng!
+        boolean finishedWithoutHanging = latch.await(2500, TimeUnit.MILLISECONDS);
+        
+        long timeTaken = System.currentTimeMillis() - startTime;
+        
+        System.out.println("[Stress Test] Thời gian AI hoàn thành: " + timeTaken + " ms");
+        System.out.println("[Stress Test] Nước đi AI chọn: (" + moveResult[0] + ", " + moveResult[1] + ")");
+
+        // CÁC TIÊU CHÍ KIỂM ĐỊNH (ASSERTIONS) 
+        // Kiểm tra 1: Không bị treo (phải trả về kết quả trước khi timeout chờ 2.5 giây của Test)
+        assertTrue(finishedWithoutHanging, "LỖI MẠNG: AI đã bị treo luồng hoặc chạy quá 2.5 giây!");
+        
+        // Kiểm tra 2: Thời gian thực thi thực tế của AI phải nhỏ hơn mức 2 giây quy định (VD: <= 1900ms)
+        assertTrue(timeTaken < 2000, "LỖI HIỆU NĂNG: AI chạy mất " + timeTaken + " ms, VƯỢT QUÁ QUY ĐỊNH 2 GIÂY!");
+        
+        // Kiểm tra 3: Nước đi AI trả về PHẢI là nước đi hợp lệ
+        assertTrue(board.isValidMove(moveResult[0], moveResult[1], 1), 
+                "LỖI LOGIC: Nước đi trả về (" + moveResult[0] + ", " + moveResult[1] + ") là sai luật!");
+    }
 }
+    
