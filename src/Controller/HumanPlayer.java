@@ -8,6 +8,6 @@ public class HumanPlayer extends Player {
 
     @Override
     public void makeMove(Board board, MoveCallBack callBack) {
-        // TODO (UC-04): Xử lý nước đi của người chơi qua mouse click
+        // TODO (UC-03): Xử lý nước đi của người chơi qua mouse click
     }
 }

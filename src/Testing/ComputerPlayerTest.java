@@ -6,6 +6,8 @@ import org.junit.jupiter.api.DisplayName;
 import Controller.*;
 import Model.*;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -18,12 +20,16 @@ public class ComputerPlayerTest {
     private ComputerPlayer aiBlack; // AI là Đen
     private ComputerPlayer aiWhite; // AI là Trắng
     private Board board;
+    private long startTimeMs;
  
     @BeforeEach
-    void setUp() {
+   public void setUp() {
         aiBlack = new ComputerPlayer(Board.BLACK);
         aiWhite = new ComputerPlayer(Board.WHITE);
         board = new Board();
+        
+        // Cấp một mốc thời gian mới tinh trước khi bất kỳ bài test nào chạy
+        startTimeMs = System.currentTimeMillis();
     }
  
     // getOppColor()
@@ -47,7 +53,7 @@ public class ComputerPlayerTest {
     void minimax_DepthZero_ReturnsHeuristicValue() {
         Node node = new Node(board, new int[]{2, 3}, Board.BLACK);
         // depth=0 → trả về heuristic ngay, không đệ quy
-        int val = aiBlack.minimax(true, node, 0);
+        int val = aiBlack.minimax(true, node, 0, startTimeMs);
         // Chỉ cần không throw exception và trả về số nguyên hợp lệ
         assertTrue(val > Integer.MIN_VALUE && val < Integer.MAX_VALUE);
     }
@@ -56,8 +62,8 @@ public class ComputerPlayerTest {
     @DisplayName("minimax: các depth khác nhau đều trả về giá trị hợp lệ")
     void minimax_DifferentDepthsValidValues() {
         Node node = new Node(board, new int[]{2, 3}, Board.BLACK);
-        int val1 = aiBlack.minimax(true, node, 1);
-        int val2 = aiBlack.minimax(true, node, 2);
+        int val1 = aiBlack.minimax(true, node, 1, startTimeMs);
+        int val2 = aiBlack.minimax(true, node, 2, startTimeMs);
         assertTrue(val1 > Integer.MIN_VALUE && val1 < Integer.MAX_VALUE);
         assertTrue(val2 > Integer.MIN_VALUE && val2 < Integer.MAX_VALUE);
     }
@@ -71,7 +77,7 @@ public class ComputerPlayerTest {
             for (int j = 0; j < 8; j++)
                 setCell(fullBoard, i, j, Board.BLACK);
         Node node = new Node(fullBoard, new int[]{0, 0}, Board.BLACK);
-        int val = aiBlack.minimax(true, node, 5);
+        int val = aiBlack.minimax(true, node, 5, startTimeMs);
         assertTrue(val > Integer.MIN_VALUE && val < Integer.MAX_VALUE, "Phải trả về heuristic khi game over");
     }
  
@@ -83,7 +89,7 @@ public class ComputerPlayerTest {
         if (b == null) return; // bỏ qua nếu không setup được
         Node node = new Node(b, new int[]{0, 0}, Board.WHITE);
         // Không được throw exception
-        assertDoesNotThrow(() -> aiWhite.minimax(true, node, 2));
+        assertDoesNotThrow(() -> aiWhite.minimax(true, node, 2, startTimeMs));
     }
  
     // alphaBeta()
@@ -92,16 +98,19 @@ public class ComputerPlayerTest {
     @DisplayName("alphaBeta: depth=0 trả về heuristic (không crash)")
     void alphaBeta_DepthZero_ReturnsHeuristic() {
         Node node = new Node(board, new int[]{2, 3}, Board.BLACK);
-        int val = aiBlack.alphaBeta(true, node, 0, -99999999, 99999999);
+        int val = aiBlack.alphaBeta(true, node, 0, -99999999, 99999999, startTimeMs);
         assertTrue(val > Integer.MIN_VALUE && val < Integer.MAX_VALUE);
     }
  
     @Test
     @DisplayName("alphaBeta: kết quả bằng minimax ở cùng trạng thái và depth nhỏ")
     void alphaBeta_SameResultAsMinimax() {
+    	// Cấp cho hàm một mốc thời gian hiện tại để nó không bị lỗi thiếu tham số
+        long startTimeMs = System.currentTimeMillis();
+        
         Node node = new Node(board, new int[]{2, 3}, Board.BLACK);
-        int minimaxVal = aiBlack.minimax(true, node, 3);
-        int alphaBetaVal = aiBlack.alphaBeta(true, node, 3, -99999999, 99999999);
+        int minimaxVal = aiBlack.minimax(true, node, 3, startTimeMs);
+        int alphaBetaVal = aiBlack.alphaBeta(true, node, 3, -99999999, 99999999, startTimeMs);
         assertEquals(minimaxVal, alphaBetaVal,
             "alphaBeta và minimax phải cho cùng kết quả (alphaBeta chỉ tối ưu tốc độ)");
     }
@@ -110,8 +119,8 @@ public class ComputerPlayerTest {
     @DisplayName("alphaBeta: depth cao hơn cho kết quả khác depth thấp hơn")
     void alphaBeta_DifferentDepthsDifferentResults() {
         Node node = new Node(board, new int[]{2, 3}, Board.BLACK);
-        int val1 = aiBlack.alphaBeta(true, node, 1, -99999999, 99999999);
-        int val3 = aiBlack.alphaBeta(true, node, 3, -99999999, 99999999);
+        int val1 = aiBlack.alphaBeta(true, node, 1, -99999999, 99999999, startTimeMs);
+        int val3 = aiBlack.alphaBeta(true, node, 3, -99999999, 99999999, startTimeMs);
         // Chỉ cần cả 2 đều trả về giá trị hợp lệ, không crash
         assertTrue(val1 > Integer.MIN_VALUE && val1 < Integer.MAX_VALUE);
         assertTrue(val3 > Integer.MIN_VALUE && val3 < Integer.MAX_VALUE);
@@ -122,8 +131,8 @@ public class ComputerPlayerTest {
     void alphaBeta_PruningStillReturnsValue() {
         Node node = new Node(board, new int[]{2, 3}, Board.BLACK);
         // alpha = beta = 0 → sẽ cắt tỉa ngay
-        int val = aiBlack.alphaBeta(true, node, 3, 0, 0);
-        assertTrue(val > Integer.MIN_VALUE && val < Integer.MAX_VALUE);
+        int val = aiBlack.alphaBeta(true, node, 3, 0, 0, startTimeMs);
+        assertTrue(val > Integer.MIN_VALUE && val < Integer.MAX_VALUE );
     }
  
     @Test
@@ -134,7 +143,7 @@ public class ComputerPlayerTest {
             for (int j = 0; j < 8; j++)
                 setCell(fullBoard, i, j, Board.BLACK);
         Node node = new Node(fullBoard, new int[]{0, 0}, Board.BLACK);
-        int val = aiBlack.alphaBeta(true, node, 5, -99999999, 99999999);
+        int val = aiBlack.alphaBeta(true, node, 5, -99999999, 99999999, startTimeMs);
         assertTrue(val > Integer.MIN_VALUE && val < Integer.MAX_VALUE);
     }
  
@@ -144,7 +153,7 @@ public class ComputerPlayerTest {
         Board b = setupBoardWhiteOnly();
         if (b == null) return;
         Node node = new Node(b, new int[]{0, 0}, Board.WHITE);
-        assertDoesNotThrow(() -> aiWhite.alphaBeta(true, node, 2, -99999999, 99999999));
+        assertDoesNotThrow(() -> aiWhite.alphaBeta(true, node, 2, -99999999, 99999999, startTimeMs));
     }
  
     // heuristic() — kiểm tra gián tiếp qua alphaBeta(depth=0)
@@ -159,8 +168,8 @@ public class ComputerPlayerTest {
         Node nodeWithCorner = new Node(withCorner, new int[]{0, 0}, Board.BLACK);
         Node nodeWithout   = new Node(board,       new int[]{2, 3}, Board.BLACK);
  
-        int valWith    = aiBlack.alphaBeta(true, nodeWithCorner, 0, -99999999, 99999999);
-        int valWithout = aiBlack.alphaBeta(true, nodeWithout,    0, -99999999, 99999999);
+        int valWith    = aiBlack.alphaBeta(true, nodeWithCorner, 0, -99999999, 99999999, startTimeMs);
+        int valWithout = aiBlack.alphaBeta(true, nodeWithout,    0, -99999999, 99999999, startTimeMs);
  
         assertTrue(valWith > valWithout, "Chiếm góc phải cho heuristic cao hơn");
     }
@@ -174,8 +183,8 @@ public class ComputerPlayerTest {
         Node nodeOppCorner = new Node(opponentCorner, new int[]{0, 0}, Board.WHITE);
         Node nodeNormal    = new Node(board,           new int[]{2, 3}, Board.BLACK);
  
-        int valOpp    = aiBlack.alphaBeta(true, nodeOppCorner, 0, -99999999, 99999999);
-        int valNormal = aiBlack.alphaBeta(true, nodeNormal,    0, -99999999, 99999999);
+        int valOpp    = aiBlack.alphaBeta(true, nodeOppCorner, 0, -99999999, 99999999, startTimeMs);
+        int valNormal = aiBlack.alphaBeta(true, nodeNormal,    0, -99999999, 99999999, startTimeMs);
  
         assertTrue(valOpp < valNormal, "Đối thủ chiếm góc phải cho heuristic thấp hơn");
     }
@@ -193,7 +202,7 @@ public class ComputerPlayerTest {
                 setCell(dominated, i, j, Board.WHITE);
  
         Node node = new Node(dominated, new int[]{0, 0}, Board.BLACK);
-        int val = aiBlack.alphaBeta(true, node, 0, -99999999, 99999999);
+        int val = aiBlack.alphaBeta(true, node, 0, -99999999, 99999999, startTimeMs);
         assertTrue(val > 0, "AI nhiều quân hơn → heuristic phải dương");
     }
  
@@ -202,7 +211,7 @@ public class ComputerPlayerTest {
     void heuristic_BalancedBoard_NearZero() {
         // Trạng thái ban đầu: 2 Đen, 2 Trắng → khá cân bằng
         Node node = new Node(board, new int[]{2, 3}, Board.BLACK);
-        int val = aiBlack.alphaBeta(true, node, 0, -99999999, 99999999);
+        int val = aiBlack.alphaBeta(true, node, 0, -99999999, 99999999, startTimeMs);
         // Không nhất thiết = 0 vì còn tính corner/edge/mobility, nhưng không quá lớn
         assertTrue(Math.abs(val) < 500, "Bàn cờ cân bằng → heuristic không quá lớn");
     }
@@ -286,4 +295,91 @@ public class ComputerPlayerTest {
             return null;
         }
     }
+    // 23130186_TranLeMinhMan_PhatTrienTiep Kiểm tra tính đúng đắn của Iterative Deepening
+    @Test
+    @DisplayName("Kiểm tra tính đúng đắn của Iterative Deepening (Regression Test)")
+    public void testMakeMove_IterativeDeepening_Correctness() throws InterruptedException {
+        
+        // 1. Lấy danh sách các nước đi hợp lệ cần phải có để đối chiếu
+        List<int[]> validMoves = board.getValidMoves(Board.BLACK);
+        assertFalse(validMoves.isEmpty(), "Bàn cờ ban đầu phải có nước đi hợp lệ cho Đen");
+
+        // 2. Dùng CountDownLatch để hứng kết quả từ luồng ngầm
+        CountDownLatch latch = new CountDownLatch(1);
+        int[] moveResult = {-1, -1};
+
+        // 3. Kích hoạt thuật toán Iterative Deepening
+        aiBlack.makeMove(board, new MoveCallBack() {
+            @Override
+            public void onMove(int row, int col) {
+                moveResult[0] = row;
+                moveResult[1] = col;
+                latch.countDown(); // Đánh dấu đã tính xong
+            }
+        });
+
+        // Đợi AI chạy xong (Cho khoảng 5 giây thoải mái vì đây không phải test hiệu năng)
+        boolean finished = latch.await(5000, TimeUnit.MILLISECONDS);
+
+        // các tiêu chí kiểm định assertions
+        
+        // Đảm bảo AI chạy xong trọn vẹn thuật toán mà không bị crash hay kẹt vòng lặp vô hạn
+        assertTrue(finished, "LỖI: AI bị kẹt trong vòng lặp Iterative Deepening!");
+        
+        // Đảm bảo AI không bị mất lượt (trả về -1, -1) khi bàn cờ rõ ràng có nước đi
+        assertNotEquals(-1, moveResult[0], "LỖI: AI trả về pass lượt dù có nước đi!");
+        assertNotEquals(-1, moveResult[1], "LỖI: AI trả về pass lượt dù có nước đi!");
+
+        // quan trọng: Đảm bảo kết quả trả về của Iterative Deepening là đúng luật
+        boolean isMoveValid = board.isValidMove(moveResult[0], moveResult[1], Board.BLACK);
+        assertTrue(isMoveValid, "LỖI LOGIC: Nước đi (" + moveResult[0] + ", " + moveResult[1] + ") hoàn toàn sai luật Othello!");
+    }
+    
+    // Stress test cho deepening structure_23130186_TranLeMinhMan_PhatTrienTiep
+    @Test
+    public void testMakeMove_StressTest_TimeConstraint() throws InterruptedException {
+        // 1. Khởi tạo một bàn cờ trống (hoặc có thể setup một thế cờ phức tạp tùy ý)
+        Board board = new Board(); 
+        
+        // 2. Khởi tạo AI (giả sử AI cầm cờ Đen = 1)
+        ComputerPlayer aiPlayer = new ComputerPlayer(1);
+        
+        // 3. Sử dụng CountDownLatch để luồng Test chờ luồng AI tính toán xong
+        CountDownLatch latch = new CountDownLatch(1);
+        
+        // 4. Mảng tạm để hứng kết quả trả về từ callBack
+        int[] moveResult = {-1, -1};
+        
+        // 5. BẮT ĐẦU BẤM GIỜ TỪ BÊN NGOÀI BÀI TEST
+        long startTime = System.currentTimeMillis();
+        
+        aiPlayer.makeMove(board, new MoveCallBack() {
+            @Override
+            public void onMove(int row, int col) {
+                moveResult[0] = row;
+                moveResult[1] = col;
+                latch.countDown(); // Đánh dấu là AI đã tính xong, mở khóa cho bài Test đi tiếp
+            }
+        });
+        
+        // 6. Chờ tối đa 2.5 giây. Nếu sau 2.5 giây mà CountdownLatch chưa mở -> Bị treo luồng!
+        boolean finishedWithoutHanging = latch.await(2500, TimeUnit.MILLISECONDS);
+        
+        long timeTaken = System.currentTimeMillis() - startTime;
+        
+        System.out.println("[Stress Test] Thời gian AI hoàn thành: " + timeTaken + " ms");
+        System.out.println("[Stress Test] Nước đi AI chọn: (" + moveResult[0] + ", " + moveResult[1] + ")");
+
+        // CÁC TIÊU CHÍ KIỂM ĐỊNH (ASSERTIONS) 
+        // Kiểm tra 1: Không bị treo (phải trả về kết quả trước khi timeout chờ 2.5 giây của Test)
+        assertTrue(finishedWithoutHanging, "Lỗi mạng: AI đã bị treo luồng hoặc chạy quá 2.5 giây!");
+        
+        // Kiểm tra 2: Thời gian thực thi thực tế của AI phải nhỏ hơn mức 2 giây quy định (VD: <= 1900ms)
+        assertTrue(timeTaken < 2000, "Lỗi hiệu năng: AI chạy mất " + timeTaken + " ms, VƯỢT QUÁ QUY ĐỊNH 2 GIÂY!");
+        
+        // Kiểm tra 3: Nước đi AI trả về PHẢI là nước đi hợp lệ
+        assertTrue(board.isValidMove(moveResult[0], moveResult[1], 1), 
+                "Lỗi logic: Nước đi trả về (" + moveResult[0] + ", " + moveResult[1] + ") là sai luật!");
+    }
 }
+    

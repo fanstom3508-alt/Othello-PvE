@@ -21,46 +21,46 @@ public class GameSessionTest {
 
     @BeforeEach
     void setUp() {
-        // Reset về trạng thái mặc định trước mỗi test
-        GameSession.setDifficulty(5);
+        // Reset về trạng thái mặc định trước mỗi test (mặc định Khó = 10)
+        GameSession.setDifficulty(10);
         GameSession.setPlayerName(null);
         GameSession.setPlayerColor(Board.BLACK);
     }
 
     @Test
-    @DisplayName("TC-2.09a: setDifficulty(1) lưu depth Dễ thành công")
-    void setDifficulty_Easy_Returns1() {
-        GameSession.setDifficulty(1);
-        assertEquals(1, GameSession.getDifficulty());
-    }
-
-    @Test
-    @DisplayName("TC-2.02a: setDifficulty(3) lưu depth Trung bình thành công")
-    void setDifficulty_Medium_Returns3() {
+    @DisplayName("TC-2.09a: setDifficulty(3) lưu depth Dễ thành công")
+    void setDifficulty_Easy_Returns3() {
         GameSession.setDifficulty(3);
         assertEquals(3, GameSession.getDifficulty());
     }
 
     @Test
-    @DisplayName("TC-2.09b: setDifficulty(5) lưu depth Khó thành công")
-    void setDifficulty_Hard_Returns5() {
+    @DisplayName("TC-2.02a: setDifficulty(5) lưu depth Trung bình thành công")
+    void setDifficulty_Medium_Returns5() {
         GameSession.setDifficulty(5);
         assertEquals(5, GameSession.getDifficulty());
     }
 
     @Test
-    @DisplayName("TC-2.09c: Giá trị mặc định của difficulty là 5 (Khó)")
-    void getDifficulty_Default_Returns5() {
-        // Luồng 2.5.1 nhánh YES: không chọn → mặc định depth=5
-        assertEquals(5, GameSession.getDifficulty());
+    @DisplayName("TC-2.09b: setDifficulty(10) lưu depth Khó thành công")
+    void setDifficulty_Hard_Returns10() {
+        GameSession.setDifficulty(10);
+        assertEquals(10, GameSession.getDifficulty());
+    }
+
+    @Test
+    @DisplayName("TC-2.09c: Giá trị mặc định của difficulty là 10 (Khó)")
+    void getDifficulty_Default_Returns10() {
+        // Luồng 2.5.1 nhánh YES: không chọn → mặc định depth=10
+        assertEquals(10, GameSession.getDifficulty());
     }
 
     @Test
     @DisplayName("TC-2.09d: setDifficulty ghi đè giá trị cũ thành công")
     void setDifficulty_Overwrite_Success() {
-        GameSession.setDifficulty(1);
         GameSession.setDifficulty(3);
-        assertEquals(3, GameSession.getDifficulty());
+        GameSession.setDifficulty(5);
+        assertEquals(5, GameSession.getDifficulty());
     }
 
     @Test
@@ -69,12 +69,12 @@ public class GameSessionTest {
         // Mô phỏng kết quả sau khi hoàn tất UC-02 với chức năng mới
         GameSession.setPlayerName("Alpha");
         GameSession.setPlayerColor(Board.WHITE);
-        GameSession.setDifficulty(1);
+        GameSession.setDifficulty(3);
 
         assertAll(
             () -> assertEquals("Alpha", GameSession.getPlayerName()),
             () -> assertEquals(Board.WHITE, GameSession.getPlayerColor()),
-            () -> assertEquals(1, GameSession.getDifficulty())
+            () -> assertEquals(3, GameSession.getDifficulty())
         );
     }
 
@@ -83,12 +83,12 @@ public class GameSessionTest {
     void gameSession_TC202_FullFlow() {
         GameSession.setPlayerName("Test");
         GameSession.setPlayerColor(Board.WHITE);
-        GameSession.setDifficulty(3);
+        GameSession.setDifficulty(5);
 
         assertAll(
             () -> assertEquals("Test", GameSession.getPlayerName()),
             () -> assertEquals(Board.WHITE, GameSession.getPlayerColor()),
-            () -> assertEquals(3, GameSession.getDifficulty())
+            () -> assertEquals(5, GameSession.getDifficulty())
         );
     }
 }
