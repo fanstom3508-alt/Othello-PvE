@@ -36,17 +36,15 @@ public class MainMenu extends JFrame {
             btnPlay.addActionListener(e -> startGame());
             add(btnPlay);
 
-            // TODO (UC-02): Trước khi startGame() cần mở màn hình nhập tên
-
-            // UC-05 5.1.0: Nút xem bảng xếp hạng
-            btnLeaderboard = createStyledButton("Bảng xếp hạng", new Color(33, 109, 185), new Color(24, 85, 150));
+            // UC-05: Cấu hình nút Bảng xếp hạng trên giao diện chính
+            btnLeaderboard = createStyledButton("Bảng xếp hạng", new Color(33, 150, 243), new Color(25, 118, 210));
             btnLeaderboard.setBounds(110, 440, 300, 65);
+            // [5.1.0] Người chơi nhấn nút "Bảng xếp hạng" trên màn hình giao diện.
             btnLeaderboard.addActionListener(e -> openLeaderboard());
             add(btnLeaderboard);
-            
-            
-            btnHowTo = createStyledButton("?  Cách chơi", new Color(33, 109, 185), new Color(24, 85, 150));
-            btnHowTo.setBounds(110, 520, 300, 65);
+
+            btnHowTo = createStyledButton("Cách chơi", new Color(255, 193, 7), new Color(213, 162, 2));
+            btnHowTo.setBounds(110, 530, 300, 65);
             btnHowTo.addActionListener(e -> openHowToPlay());
             add(btnHowTo);
         }
@@ -66,7 +64,7 @@ public class MainMenu extends JFrame {
             g2.setPaint(bg);
             g2.fillRect(0, 0, w, getHeight());
 
-            //Mini bàn cờ minh họa 4x4 ở trê
+            // Mini bàn cờ minh họa 4x4 ở trên
             drawMiniBoard(g2, w);
 
             // Tiêu đề OTHELLO
@@ -121,7 +119,7 @@ public class MainMenu extends JFrame {
             }
         }
         
-        // UC-1: Tạo nút với hiệu ứng hover
+        // UC-1: Tạo nút với hiệu ứng hover và đổ bóng nâng cao
         private JButton createStyledButton(String text, Color normalColor, Color hoverColor) {
             JButton btn = new JButton(text) {
                 @Override
@@ -131,13 +129,11 @@ public class MainMenu extends JFrame {
                     Color bg = getModel().isRollover() ? hoverColor : normalColor;
                     if (getModel().isPressed()) bg = bg.darker();
                     g2.setColor(new Color(0, 0, 0, 60));
-                    g2.fillRoundRect(2, 4, getWidth(), getHeight(), 18, 18);
+                    g2.fillRoundRect(2, 4, getWidth() - 4, getHeight() - 4, 18, 18);
                     
-                    // Shadow
+                    // Shadow & Main Button
                     g2.setColor(bg);
-                    g2.fillRoundRect(0, 0, getWidth(), getHeight(), 18, 18);
-                    g2.setColor(bg);
-                    g2.fillRoundRect(0, 0, getWidth(), getHeight(), 18, 18);
+                    g2.fillRoundRect(0, 0, getWidth() - 4, getHeight() - 4, 18, 18);
                     
                     // Text
                     g2.setColor(Color.WHITE);
@@ -160,14 +156,12 @@ public class MainMenu extends JFrame {
     }
 
     // UC-1.1: Khởi động ván game mới, tạo đối tượng OthelloGame và chuyển sang màn hình chơi
- // UC-02: Player chọn "Chơi với máy" và nhập tên hiển thị
+    // UC-02: Player chọn "Chơi với máy" và nhập tên hiển thị
     private void startGame() {
-    	 // 2.1 Player chọn "Chơi với máy" từ MainMenu
-        // (method này được gọi khi click btnPlay)
-    	String playerName;
+        // 2.1 Player chọn "Chơi với máy" từ MainMenu (method này được gọi khi click btnPlay)
+        String playerName;
 
         while (true) {
-
             // 2.2 System hiển thị hộp thoại nhập tên
             playerName = JOptionPane.showInputDialog(
                     this,
@@ -203,8 +197,7 @@ public class MainMenu extends JFrame {
                 continue;
             }
 
-            // 2.4 System nhận tên người chơi
-            // 2.5 validation OK → thoát vòng lặp
+            // 2.4 System nhận tên người chơi và validation OK → thoát vòng lặp
             break;
         }
 
@@ -214,15 +207,11 @@ public class MainMenu extends JFrame {
         // 2.7 System lưu thành công
         System.out.println("Saved player name: " + GameSession.getPlayerName());
 
-
-       
-     // UC-02: Player chọn màu quân cờ
-     
+        // UC-02: Player chọn màu quân cờ
         int playerColor;
 
         // loop để xử lý A2 (quay lại UC-01)
         while (true) {
-
             // 2.1 System hiển thị dialog chọn màu
             int choice = JOptionPane.showOptionDialog(
                     this,
@@ -237,7 +226,6 @@ public class MainMenu extends JFrame {
 
             // 2.A1: Player không chọn (Cancel)
             if (choice == -1) {
-
                 int confirm = JOptionPane.showConfirmDialog(
                         this,
                         "Bạn chưa chọn màu. Dùng mặc định (Đen)?",
@@ -250,7 +238,7 @@ public class MainMenu extends JFrame {
                     playerColor = Board.BLACK;
                     break;
                 } else {
-                    // 2.A2: quay lại UC-01
+                    // 2.A2: quay lại bước nhập tên
                     startGame();
                     return;
                 }
@@ -258,34 +246,28 @@ public class MainMenu extends JFrame {
 
             // 2.2 + 2.3 Player chọn màu
             playerColor = (choice == 1) ? Board.WHITE : Board.BLACK;
-
-            // 2.4 return value OK
             break;
         }
 
         // 2.7 System lưu màu vào GameSession
         GameSession.setPlayerColor(playerColor);
 
-        // =========================
-        // UC-03: Start Game Screen
-        // =========================
-
-        // 2.8 Khởi tạo game
+        // Khởi tạo và hiển thị màn hình game
         dispose();
-
-        // 2.9 Hiển thị màn hình game
-        // UC-1.2: new đối tượng OthelloGame
         SwingUtilities.invokeLater(() ->
                 new OthelloGame(playerColor).setVisible(true)
         );
     }
 
-    // UC-05 5.1.0: Mở màn hình Leaderboard
+    // UC-05 [5.1.0]: Mở màn hình Leaderboard từ Menu chính
     private void openLeaderboard() {
-        new LeaderboardDialog(this, null).setVisible(true);
+        // Lấy tên người chơi hiện hành từ GameSession để phục vụ cho việc Highlight dòng [5.1.5]
+        String currentName = GameSession.getPlayerName();
+        // [5.1.1] Khởi tạo và hiển thị hộp thoại giao diện LeaderboardDialog dạng Modal phía trên cửa sổ chính
+        new LeaderboardDialog(this, currentName).setVisible(true);
     }
 
-    // UC -03: Mở cách chơi
+    // UC-03: Mở cách chơi
     private void openHowToPlay() {
         String url = "https://www.thegioididong.com/game-app/othello-la-gi-huong-dan-luat-chien-thuat-cach-choi-co-lat-don-1323614";
         try {
