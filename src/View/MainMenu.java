@@ -37,9 +37,9 @@ public class MainMenu extends JFrame {
             btnPlay.addActionListener(e -> startGame());
             add(btnPlay);
 
-            // TODO (UC-01): Trước khi startGame() cần mở màn hình nhập tên
+            // TODO (UC-02): Trước khi startGame() cần mở màn hình nhập tên
 
-            // 5.1.0: Nút xem bảng xếp hạng
+            // UC-05 5.1.0: Nút xem bảng xếp hạng
             btnLeaderboard = createStyledButton("Bảng xếp hạng", new Color(33, 109, 185), new Color(24, 85, 150));
             btnLeaderboard.setBounds(110, 440, 300, 65);
             btnLeaderboard.addActionListener(e -> openLeaderboard());
@@ -325,7 +325,7 @@ public class MainMenu extends JFrame {
         SwingUtilities.invokeLater(() -> new OthelloGame(playerColor).setVisible(true));
     }
 
-    // 5.1.0: Mở màn hình Leaderboard
+    // UC-05 5.1.0: Mở màn hình Leaderboard
     private void openLeaderboard() {
         new LeaderboardDialog(this, null).setVisible(true);
     }
