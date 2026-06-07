@@ -15,10 +15,6 @@ import java.awt.event.*;
 import java.util.List;
 import java.util.ArrayList;
 
-/**
- * Màn hình chính điều khiển trận đấu Cờ Othello (Người vs Máy).
- * Tích hợp chặt chẽ UC-03 (Chơi game), UC-04 (Xem kết quả ván đấu), và UC-07 (Thoát ván an toàn).
- */
 public class OthelloGame extends JFrame {
     private Board board;
     private Player humanPlayer;
@@ -34,8 +30,7 @@ public class OthelloGame extends JFrame {
     private long timeLeftWhite = 20L * 60 * 1000;
     private int lastMoveRow = -1, lastMoveCol = -1, lastMoveFlipped = 0;
     private int lastMovePlayer = -1;
-    
-    // Tên người chơi dùng để highlight leaderboard
+    // UC-05: Tên người chơi dùng để highlight leaderboard
     private String playerName = "Player";
     private boolean gameEnded = false;
 
@@ -44,21 +39,22 @@ public class OthelloGame extends JFrame {
         setTitle("Cờ Othello - Người vs Máy");
         setSize(650, 750);
         
-        // [7.1.0] ĐỒNG BỘ FIX LỖI: Chặn JFrame tự đóng ngang xương để ép luồng qua WindowListener kiểm tra
-        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        // [7.1.0]: Đóng bằng nút X cũng kích hoạt dispose → windowClosed → MainMenu
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout());
         setLocationRelativeTo(null);
 
-        // Khởi tạo người và máy dựa trên màu truyền vào từ cấu hình màn hình trước
+        // khởi tạo người và máy dựa trên màu truyền vô
         this.humanColor = chosenHumanColor;
+        int computerColor = (humanColor == Board.BLACK) ? Board.WHITE : Board.BLACK;
 
-        // Lấy tên người chơi an toàn từ GameSession toàn cục của hệ thống
+        // UC-01/UC-05: Lấy tên người chơi từ GameSession (do UC-01 thiết lập)
+
         String name = GameSession.getPlayerName();
         if (name != null && !name.trim().isEmpty()) {
             this.playerName = name.trim();
         }
 
-        int computerColor = (humanColor == Board.BLACK) ? Board.WHITE : Board.BLACK;
         humanPlayer = new HumanPlayer(humanColor);
         computerPlayer = new ComputerPlayer(computerColor);
 
@@ -67,25 +63,14 @@ public class OthelloGame extends JFrame {
         createBoardPanel();
         restartGame();
 
-        // [7.1.0] Bắt trọn vẹn hành vi người dùng thao tác trực tiếp với cửa sổ hệ thống
+        // [7.1.0]: Khi đóng cửa sổ game, hiện lại MainMenu
         addWindowListener(new WindowAdapter() {
             @Override
-            public void windowClosing(WindowEvent e) {
-                // [7.1.2] Khi bấm nút X dở dang -> Chuyển hướng tới hàm xử lý thông báo YES/NO của UC-07
-                forceEndGame();
-            }
-
-            @Override
             public void windowClosed(WindowEvent e) {
-                // [7.1.6] Sau khi cửa sổ đồ họa bị hủy hoàn toàn, giải phóng luồng đếm giờ và kích hoạt lại MainMenu
-                if (turnTimer != null && turnTimer.isRunning()) {
-                    turnTimer.stop();
-                }
                 SwingUtilities.invokeLater(() -> new MainMenu().setVisible(true));
             }
         });
     }
-
 
     // UC-1.9, UC-1.26, UC-1.19: Trả về tên hiển thị của người chơi theo màu quân (Bạn hoặc Máy)
     // UC-3.11: Lấy tên hiển thị của người chơi dựa trên ID (màu cờ)
@@ -97,7 +82,7 @@ public class OthelloGame extends JFrame {
         }
     }
 
-    // UC-1.7: Tạo thanh menu bar với các tùy chọn điều khiển trạng thái trận đấu
+    // UC-1.7 Tạo thanh menu bar với các tùy chọn Chơi mới, Kết thúc ván, Về menu, Thoát
     private void createMenu() {
         JMenuBar menuBar = new JMenuBar();
         JMenu gameMenu = new JMenu("Trò chơi");
@@ -107,36 +92,30 @@ public class OthelloGame extends JFrame {
         JMenuItem exit = new JMenuItem("Thoát");
 
         newGame.addActionListener(e -> restartGame());
-        
-        // Sự kiện kết thúc ván chủ động từ thanh công cụ
-        endGame.addActionListener(e -> forceEndGame());
-        
-        // Sự kiện yêu cầu chuyển hướng điều hướng về màn hình chính
+        endGame.addActionListener(e -> endGame());
         backMenu.addActionListener(e -> {
-            // [7.1.2] Hệ thống kiểm tra trạng thái ván đấu hiện tại
+        	// 7.1.0: Thoát trận đấu hiện tại (Quit Current Match)
             if (!gameEnded) {
-                // [7.1.3] Hiển thị thông báo xác nhận YES/NO nghiêm ngặt về dữ liệu
+                // 7.1.1: Hiển thị hộp thoại xác nhận (BR-04)
                 int confirm = JOptionPane.showConfirmDialog(
                     this,
-                    "Bạn có chắc muốn thoát ván đấu hiện tại về Menu chính?\nKết quả trận đấu dở dang này sẽ KHÔNG ĐƯỢC LƯU.",
+                    "Bạn có chắc muốn thoát ván đấu hiện tại?\nKết quả sẽ không được lưu.",
                     "Xác nhận thoát trận",
                     JOptionPane.YES_NO_OPTION,
                     JOptionPane.WARNING_MESSAGE
                 );
-                // Nếu chọn NO -> Hủy lệnh, quay lại trạng thái game đang chơi
+                // 7.2.1: Player chọn "Không" → hủy thoát, tiếp tục ván đấu
                 if (confirm != JOptionPane.YES_OPTION) return;
             }
-            
-            // [7.1.1] Dừng đồng hồ đếm ngược ngay lập tức
+            // 7.4.1: Game đã kết thúc (gameEnded == true) → bỏ qua confirm, thoát thẳng
             if (turnTimer != null && turnTimer.isRunning()) {
                 turnTimer.stop();
             }
-            // [7.1.4] Tuân thủ BRule-07: KHÔNG gọi ghi dữ liệu HighScoreManager khi trận đấu bị hủy ngang
-            // [7.1.5] Giải phóng tài nguyên giao diện của JFrame hiện tại
             dispose();
         });
         
         exit.addActionListener(e -> {
+            // TODO (UC-09): Thêm hộp thoại "Are you sure?"
             System.exit(0);
         });
 
@@ -150,43 +129,14 @@ public class OthelloGame extends JFrame {
         setJMenuBar(menuBar);
     }
 
-    // UC-07: Xử lý quy trình Kết Thúc Ván chủ động từ phía người dùng (Menu Item & Button X)
-    private void forceEndGame() {
-        // [7.2.1] Nếu ván đấu đã kết thúc sẵn (do hết cờ, hết giờ) -> Cho phép đóng màn hình thẳng
-        if (gameEnded) {
-            dispose();
-            return;
-        }
-        
-        // [7.1.2] + [7.1.3] Xác định ván đấu đang diễn ra dở dang -> Đẩy ra hộp thoại thông báo YES/NO cảnh báo điểm số
-        int confirm = JOptionPane.showConfirmDialog(
-            this, 
-            "Bạn có chắc muốn kết thúc ván đấu hiện tại?\nKết quả trận đấu dở dang này sẽ KHÔNG ĐƯỢC LƯU vào bảng xếp hạng.", 
-            "Xác nhận kết thúc ván đấu", 
-            JOptionPane.YES_NO_OPTION,
-            JOptionPane.WARNING_MESSAGE
-        );
-        
-        // Nếu người dùng đồng ý (YES) -> Tiến hành hủy bỏ trận đấu
-        if (confirm == JOptionPane.YES_OPTION) {
-            // [7.1.1] Hủy luồng chạy đếm thời gian
-            if (turnTimer != null && turnTimer.isRunning()) {
-                turnTimer.stop();
-            }
-            // [7.1.4] Áp dụng quy tắc nghiệp vụ BRule-07: Bỏ qua và hủy bỏ hoàn toàn các bước ghi file
-            // [7.1.5] Gọi lệnh giải phóng Frame
-            dispose();
-        }
-    }
-
-    // UC-1.13: Reset toàn bộ dữ liệu, khởi động lại đồng hồ và bắt đầu ván mới từ đầu
+    // UC-1.13 restart toàn bộ trạng thái game về ban đầu, khởi động lại đồng hồ
     private void restartGame() {
         board.restart();
         gameEnded = false;
         timeLeftBlack = 20L * 60 * 1000;
         timeLeftWhite = 20L * 60 * 1000;
-        timeBlackLabel.setText(getPlayerName(Board.BLACK) + ": 20:00");
-        timeWhiteLabel.setText(getPlayerName(Board.WHITE) + ": 20:00");
+        timeBlackLabel.setText("Đen (Bạn): 20:00");
+        timeWhiteLabel.setText("Trắng (Máy): 20:00");
         if (turnTimer != null && turnTimer.isRunning())
             turnTimer.stop();
         turnTimer.start();
@@ -197,13 +147,13 @@ public class OthelloGame extends JFrame {
         updateLastMoveLabels();
         updateBoard();
 
-        // Nếu Máy đi trước (Máy chọn quân màu Đen), kích hoạt luồng xử lý AI
+        // Nếu Máy đi trước (Máy là Đen), kích hoạt lượt của Máy
         if (board.getCurrentPlayer() != humanColor) {
             TurnBegin();
         }
     }
 
-    // UC-1.10: Tạo lưới hiển thị bàn cờ kích thước tiêu chuẩn 8x8 gồm 64 ô vuông OthelloCell
+    // UC-1.10: Tạo lưới bàn cờ 8x8 gồm 64 ô OthelloCell
     private void createBoardPanel() {
         boardPanel = new JPanel(new GridLayout(8, 8, 2, 2));
         cells = new OthelloCell[8][8];
@@ -226,16 +176,17 @@ public class OthelloGame extends JFrame {
         add(boardPanel, BorderLayout.CENTER);
     }
 
-    // UC-1.8: Thiết lập cấu trúc Panel hiển thị đầy đủ thông tin trạng thái ván đấu dồi dào trực quan
+    // UC-1.8: Tạo panel hiển thị thông tin trận đấu gồm lượt đi, đồng hồ đếm ngược, nước vừa đi, số quân ăn được
+    // nước vừa đi, số quân ăn được
     private void createStatusPanel() {
         JPanel statusPanel = new JPanel(new GridLayout(4, 1, 0, 6));
         statusPanel.setBorder(BorderFactory.createEmptyBorder(8, 10, 8, 10));
 
-        // Dòng 1: lượt + điểm số real-time
+        // Dòng 1: lượt + điểm
         statusLabel = new JLabel("Lượt đi: " + getPlayerName(Board.BLACK), SwingConstants.CENTER);
         statusLabel.setFont(new Font("Arial", Font.BOLD, 20));
 
-        // Dòng 2: Đồng hồ đếm ngược từng bên
+        // Dòng 2: đồng hồ
         timeBlackLabel = new JLabel(getPlayerName(Board.BLACK) + ": 20:00");
         timeWhiteLabel = new JLabel(getPlayerName(Board.WHITE) + ": 20:00");
         timeBlackLabel.setFont(new Font("Arial", Font.BOLD, 18));
@@ -246,11 +197,11 @@ public class OthelloGame extends JFrame {
         timePanel.add(new JLabel("|"));
         timePanel.add(timeWhiteLabel);
 
-        // Dòng 3: Tọa độ nước đi gần nhất vừa thực hiện trên bàn cờ
+        // Dòng 3: vị trí nước đi vừa rồi
         lastMoveLabel = new JLabel("Nước vừa đi: —", SwingConstants.CENTER);
         lastMoveLabel.setFont(new Font("Arial", Font.BOLD, 16));
 
-        // Dòng 4: Số lượng quân cờ lật ngược (ăn được) trong lượt đi đó
+        // Dòng 4: số quân bị lật
         flippedLabel = new JLabel("Số quân ăn được: —", SwingConstants.CENTER);
         flippedLabel.setFont(new Font("Arial", Font.BOLD, 16));
 
@@ -263,28 +214,29 @@ public class OthelloGame extends JFrame {
         turnTimer = new Timer(1000, e -> updateTimer());
     }
 
-    // UC-1.24: Đếm ngược thời gian thi đấu sau mỗi giây của người chơi hiện tại
+    // UC-1.24:  Đếm ngược đồng hồ mỗi giây cho người chơi hiện tại
     private void updateTimer() {
-        if (gameEnded) return;
         int current = board.getCurrentPlayer();
         if (current == Board.BLACK) {
             timeLeftBlack = Math.max(0, timeLeftBlack - 1000);
             timeBlackLabel.setText(getPlayerName(Board.BLACK) + ": " + formatTime(timeLeftBlack));
-            // Xử lý UC-04: Hết giờ thi đấu -> Kết thúc game ngay lập tức và xử đối thủ thắng
+            // UC-04: Hết giờ → kết thúc game, đối thủ thắng
             if (timeLeftBlack <= 0) {
                 endGameByTime(Board.WHITE);
+                return;
             }
         } else {
             timeLeftWhite = Math.max(0, timeLeftWhite - 1000);
             timeWhiteLabel.setText(getPlayerName(Board.WHITE) + ": " + formatTime(timeLeftWhite));
-            // Xử lý UC-04: Hết giờ thi đấu -> Kết thúc game ngay lập tức và xử đối thủ thắng
+            // UC-04: Hết giờ → kết thúc game, đối thủ thắng
             if (timeLeftWhite <= 0) {
                 endGameByTime(Board.BLACK);
+                return;
             }
         }
     }
 
-    // UC-1.27: Chuyển đổi thời gian từ millisecond sang chuỗi văn bản định dạng chuẩn mm:ss
+    // UC-1.27: Chuyển đổi thời gian từ millisecond sang định dạng mm:ss để hiển thị
     private String formatTime(long millis) {
         long minutes = millis / 60000;
         long seconds = (millis % 60000) / 1000;
@@ -294,20 +246,22 @@ public class OthelloGame extends JFrame {
     // UC-1.16: Vẽ lại toàn bộ bàn cờ, cập nhật trạng thái từng ô và highlight ô hợp lệ
     // UC-3.15: Cập nhật lại toàn bộ giao diện (lật cờ) và điểm số trên màn hình
     private void updateBoard() {
+        // UC-04 bổ sung thêm
+
+        // Chỉ kiểm tra kết thúc nếu game đã thực sự bắt đầu (có nhiều hơn 4 quân ban
+        // đầu)
         int[] currentScore = board.getScore();
         int totalPieces = currentScore[0] + currentScore[1];
-        
-        // Điều kiện dừng: Khi bàn cờ đã đầy hoặc không còn nước đi hợp lệ cho cả 2 bên
         if (totalPieces > 4 && board.isGameOver()) {
             endGame();
             return;
         }
-        
         int current = board.getCurrentPlayer();
+        int[] score = board.getScore();
         String turnLabel = getPlayerName(current);
         statusLabel.setText(String.format(
-                "Lượt: %s    |    Đen: %d   Trắng: %d",
-                turnLabel, currentScore[0], currentScore[1]));
+                "Lượt: %s    |    %s: %d    %s: %d",
+                turnLabel, getPlayerName(Board.BLACK), score[0], getPlayerName(Board.WHITE), score[1]));
 
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
@@ -315,7 +269,7 @@ public class OthelloGame extends JFrame {
                 if (val != Board.EMPTY) {
                     cells[i][j].setState(val);
                 } else {
-                    cells[i][j].setState(board.isValidMove(i, j, current) && !gameEnded
+                    cells[i][j].setState(board.isValidMove(i, j, current)
                             ? OthelloCell.VALID_MOVE
                             : OthelloCell.EMPTY);
                 }
@@ -326,14 +280,15 @@ public class OthelloGame extends JFrame {
     // UC-3.2: Hàm chính xử lý logic nước đi sau khi người chơi click
 
     private void handleMove(int row, int col) {
-        if (gameEnded) return;
+        if (gameEnded)
+            return;
         int current = board.getCurrentPlayer();
         if (current == humanColor) {
             if (board.isValidMove(row, col, current)) {
                 int flippedCount = board.getFlippableCount(row, col, current);
                 board.makeMove(row, col, current);
 
-                // Lưu lại vết lịch sử nước đi vừa thực hiện xong
+                // Cập nhật thông tin nước đi cuối
                 lastMoveRow = row;
                 lastMoveCol = col;
                 lastMoveFlipped = flippedCount;
@@ -356,7 +311,7 @@ public class OthelloGame extends JFrame {
         */
     private void TurnBegin() {
         if (board.isGameOver()) {
-            updateBoard();
+            updateBoard(); // Cập nhật lần cuối để hiện kết quả
             return;
         }
 
@@ -408,46 +363,20 @@ public class OthelloGame extends JFrame {
         int curPlayer = board.getCurrentPlayer();
         List<int[]> validMoves = board.getValidMoves(curPlayer);
 
-        // Xử lý luật đổi lượt: Nếu một bên không còn nước đi hợp lệ nào trên bàn cờ
-        if (board.getValidMoves(curPlayer).isEmpty()) {
-            int nextPlayer = (curPlayer == Board.BLACK) ? Board.WHITE : Board.BLACK;
-            if (board.getValidMoves(nextPlayer).isEmpty()) {
-                // Cả hai bên cùng bế tắc -> Kết thúc và phân định kết quả
-                endGame();
-                return;
-            }
-            String who = (curPlayer == humanColor) ? "Bạn" : "Máy";
-            JOptionPane.showMessageDialog(this, who + " không còn nước đi hợp lệ, tự động chuyển quyền đi!");
+        // Xử lý mất lượt
+        if (validMoves.isEmpty()) {
+            // (Tùy chọn: Hiện thông báo Toast/Dialog mất lượt tại đây)
             board.switchPlayer();
             TurnBegin(); // Gọi đệ quy nhường lượt
             return;
         }
         // Kiểm tra lượt AI
 
-        // Kích hoạt luồng chạy tính toán nước đi thông minh của Máy (ComputerPlayer)
-        if (player instanceof ComputerPlayer) {
-            MoveCallBack callback = new MoveCallBack() {
         if (curPlayer == computerPlayer.getColor()) { 
             computerPlayer.makeMove(board, new MoveCallBack() {
                 @Override
              // UC-3.30: Callback nhận tọa độ tối ưu từ luồng AI trả về để tiến hành thực thi lên giao diện
                 public void onMove(int row, int col) {
-                    if (gameEnded) return;
-                    if (row == -1 && col == -1) { 
-                        board.switchPlayer();
-                        TurnBegin();
-                        return;
-                    }
-
-                    int flippedCount = board.getFlippableCount(row, col, curPlayer);
-                    board.makeMove(row, col, curPlayer);
-
-                    lastMoveRow = row;
-                    lastMoveCol = col;
-                    lastMoveFlipped = flippedCount;
-                    lastMovePlayer = curPlayer;
-
-                    // Đồng bộ dữ liệu hiển thị giao diện đồ họa an toàn trên Main Thread
                     // Lệnh này đang nằm trên luồng ngầm (AI Thread).
                     // Bắt buộc đẩy về luồng UI (Event Dispatch Thread) để không bị crash giao diện.
                 	// UC-3.32 (Sau khi phát triển): Bọc tác vụ thay đổi UI để trả quyền điều khiển về luồng UI chính
@@ -471,20 +400,6 @@ public class OthelloGame extends JFrame {
                         TurnBegin(); 
                     });
                 }
-            };
-
-            // Tạo khoảng trễ giả lập 1 giây giúp người chơi dễ theo dõi chiến thuật của Máy
-            Timer aiDelay = new Timer(1000, e -> {
-                if (!gameEnded) {
-                    player.makeMove(board, callback);
-                }
-            });
-            aiDelay.setRepeats(false);
-            aiDelay.start();
-        }
-    }
-
-    // UC-1.15: Cập nhật văn bản hiển thị chi tiết lịch sử tọa độ bàn cờ (A1 - H8)
             });
         }
     }
@@ -506,26 +421,29 @@ public class OthelloGame extends JFrame {
         String who = getPlayerName(lastMovePlayer);
         lastMoveLabel.setText(String.format("Nước vừa đi: %s đặt tại %c%d", who, colChar, rowNum));
         flippedLabel.setText(String.format("Số quân ăn được: %d", lastMoveFlipped));
+
     }
 
-    // UC-04: Xử lý Kết thúc trận đấu tiêu chuẩn (Do hết quân hoặc hai bên hết nước đi hợp lệ)
+    // UC-04: Xem kết quả trận đấu (View Game Result)
     private void endGame() {
-        if (gameEnded) return;
+        if (gameEnded)
+            return; // Tránh gọi nhiều lần
         gameEnded = true;
 
-        // Ngắt bộ đếm thời gian
+        // Dừng đồng hồ
         if (turnTimer != null && turnTimer.isRunning()) {
             turnTimer.stop();
         }
 
-        // [4.1.1] Tính toán kiểm đếm quân số chung cuộc của cả 2 bên màu Đen và Trắng
+        // UC-04 4.1.1: Đếm số quân mỗi bên
         int[] score = board.getScore();
         int blackScore = score[0];
         int whiteScore = score[1];
 
-        // [4.1.2] Thực hiện so sánh số lượng quân cờ để phân định Thắng/Thua/Hòa
+        // UC-04 4.1.2: Xác định thắng/thua/hòa
         String resultText;
         String resultTitle;
+        // Người chơi là đen hay trắng tuỳ vào humanColor
         int playerScore = (humanColor == Board.BLACK) ? blackScore : whiteScore;
 
         if (blackScore > whiteScore) {
@@ -549,10 +467,11 @@ public class OthelloGame extends JFrame {
             resultTitle = "Hòa!";
         }
 
-        // [4.1.3] Cập nhật nhãn trạng thái tổng quan
-        statusLabel.setText(String.format("KẾT THÚC  |  Đen: %d    Trắng: %d", blackScore, whiteScore));
+        // UC-04 4.1.3: Cập nhật status label
+        statusLabel.setText(String.format(
+                "KẾT THÚC  |  Đen: %d    Trắng: %d", blackScore, whiteScore));
 
-        // Xóa hoàn toàn lưới hiển thị các ô gợi ý nước đi hợp lệ cũ
+        // Xóa highlight nước đi hợp lệ
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 int val = board.getCell(i, j);
@@ -560,22 +479,17 @@ public class OthelloGame extends JFrame {
             }
         }
 
-        // [4.1.4] Tiến hành lưu kết quả và đồng bộ hóa lâu dài vào tệp tin cơ sở dữ liệu
-        boolean playerWon = (humanColor == Board.BLACK && blackScore > whiteScore)
-                || (humanColor == Board.WHITE && whiteScore > blackScore);
-        boolean playerLost = (humanColor == Board.BLACK && blackScore < whiteScore)
-                || (humanColor == Board.WHITE && whiteScore < blackScore);
+        // UC-04 4.1.4: Lưu điểm của Player
+        boolean isTopScore = HighScoreManager.addScore(playerName, playerScore);
 
-        // [7.2.1.1] Đồng bộ kết quả hợp lệ sau trận đấu kết thúc hoàn tất
-        boolean isTopScore = HighScoreManager.addMatchResult(playerName, playerScore, playerWon, playerLost);
-
-        // [4.1.5] Hiển thị hộp thoại Dialog thông báo kết quả chung cuộc cho người chơi
+        // UC-04 4.1.5: Hiển thị dialog kết quả với tùy chọn
         showEndGameDialog(resultTitle, resultText, blackScore, whiteScore, playerScore, isTopScore);
     }
 
-    // UC-04 4.2.1: Xử lý trường hợp kết thúc trận đấu do một bên bị cạn kiệt thời gian thi đấu
+    // UC-04 4.2.1: Xử lý kết thúc do hết giờ
     private void endGameByTime(int winner) {
-        if (gameEnded) return;
+        if (gameEnded)
+            return;
         gameEnded = true;
 
         if (turnTimer != null && turnTimer.isRunning()) {
@@ -588,9 +502,10 @@ public class OthelloGame extends JFrame {
 
         String resultText;
         String resultTitle;
-        int playerScore = (humanColor == Board.BLACK) ? blackScore : whiteScore;
+        int playerScore;
 
         if (humanColor == Board.BLACK) {
+            playerScore = blackScore;
             if (winner == Board.BLACK) {
                 resultText = "Đối thủ hết giờ! Bạn THẮNG!";
                 resultTitle = "Chiến thắng!";
@@ -599,6 +514,7 @@ public class OthelloGame extends JFrame {
                 resultTitle = "Hết giờ!";
             }
         } else {
+            playerScore = whiteScore;
             if (winner == Board.WHITE) {
                 resultText = "Đối thủ hết giờ! Bạn THẮNG!";
                 resultTitle = "Chiến thắng!";
@@ -608,8 +524,10 @@ public class OthelloGame extends JFrame {
             }
         }
 
-        statusLabel.setText(String.format("HẾT GIỜ  |  Đen: %d    Trắng: %d", blackScore, whiteScore));
+        statusLabel.setText(String.format(
+                "HẾT GIỜ  |  Đen: %d    Trắng: %d", blackScore, whiteScore));
 
+        // Xóa highlight
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 int val = board.getCell(i, j);
@@ -617,17 +535,11 @@ public class OthelloGame extends JFrame {
             }
         }
 
-        // [7.2.1.1] Đồng bộ lưu kết quả phân định khi ván đấu hoàn tất toàn vẹn thời gian
-        boolean playerWon = (humanColor == Board.BLACK && winner == Board.BLACK) 
-                || (humanColor == Board.WHITE && winner == Board.WHITE);
-        boolean playerLost = !playerWon;
-
-        boolean isTopScore = HighScoreManager.addMatchResult(playerName, playerScore, playerWon, playerLost);
-
+        boolean isTopScore = HighScoreManager.addScore(playerName, playerScore);
         showEndGameDialog(resultTitle, resultText, blackScore, whiteScore, playerScore, isTopScore);
     }
 
-    // UC-04: Thiết lập và cấu trúc giao diện Dialog thông báo kết quả chi tiết
+    // UC-04: Dialog hiển thị kết quả trận đấu với các tùy chọn
     private void showEndGameDialog(String title, String resultText,
             int blackScore, int whiteScore, int playerScore, boolean isTopScore) {
 
@@ -637,11 +549,13 @@ public class OthelloGame extends JFrame {
         dialog.setResizable(false);
         dialog.setLayout(new BorderLayout());
 
+        // Panel kết quả
         JPanel resultPanel = new JPanel();
         resultPanel.setLayout(new BoxLayout(resultPanel, BoxLayout.Y_AXIS));
         resultPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 10, 20));
         resultPanel.setBackground(new Color(30, 60, 15));
 
+        // Dòng kết quả chính
         JLabel resultLabel = new JLabel(resultText, SwingConstants.CENTER);
         resultLabel.setFont(new Font("Arial", Font.BOLD, 22));
         resultLabel.setForeground(new Color(255, 220, 50));
@@ -649,25 +563,29 @@ public class OthelloGame extends JFrame {
         resultPanel.add(resultLabel);
         resultPanel.add(Box.createVerticalStrut(15));
 
+        // Điểm số chi tiết
         JLabel scoreDetail = new JLabel(
-                String.format("Đen: %d  —  Trắng: %d", blackScore, whiteScore), SwingConstants.CENTER);
+                String.format("Đen: %d  —  Trắng: %d", blackScore, whiteScore),
+                SwingConstants.CENTER);
         scoreDetail.setFont(new Font("Arial", Font.BOLD, 18));
         scoreDetail.setForeground(Color.WHITE);
         scoreDetail.setAlignmentX(Component.CENTER_ALIGNMENT);
         resultPanel.add(scoreDetail);
         resultPanel.add(Box.createVerticalStrut(8));
 
+        // Điểm của người chơi
         JLabel playerScoreLabel = new JLabel(
-                String.format("Điểm của bạn (%s): %d", playerName, playerScore), SwingConstants.CENTER);
+                String.format("Điểm của bạn (%s): %d", playerName, playerScore),
+                SwingConstants.CENTER);
         playerScoreLabel.setFont(new Font("Arial", Font.PLAIN, 16));
         playerScoreLabel.setForeground(new Color(180, 220, 130));
         playerScoreLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         resultPanel.add(playerScoreLabel);
 
-        // Hiển thị thông báo phụ nếu thành tích lọt vào Top 10 kỷ lục cao nhất
+        // Thông báo nếu lọt top
         if (isTopScore) {
             resultPanel.add(Box.createVerticalStrut(8));
-            JLabel topLabel = new JLabel("(*) Thành tích xuất sắc lọt vào Bảng xếp hạng!", SwingConstants.CENTER);
+            JLabel topLabel = new JLabel("(*) Bạn đã lọt vào bảng xếp hạng!", SwingConstants.CENTER);
             topLabel.setFont(new Font("Arial", Font.BOLD, 15));
             topLabel.setForeground(new Color(255, 200, 50));
             topLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -676,31 +594,32 @@ public class OthelloGame extends JFrame {
 
         dialog.add(resultPanel, BorderLayout.CENTER);
 
-        // Thanh công cụ chứa các nút tùy chọn hành động sau ván đấu
+        // Panel nút chức năng
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
         buttonPanel.setBackground(new Color(30, 60, 15));
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 15, 0));
 
-        // Nút Chơi lại ván mới lập tức
+        // Nút Chơi lại
         JButton restartBtn = createDialogButton("Chơi lại", new Color(46, 160, 67));
         restartBtn.addActionListener(e -> {
             dialog.dispose();
+            gameEnded = false;
             restartGame();
         });
         buttonPanel.add(restartBtn);
 
-        // [5.1.0] Người chơi click nút "Xếp hạng" -> Mở màn hình Leaderboard Dialog dạng Modal
+        // UC-05 5.1.0: Nút Xem bảng xếp hạng
         JButton leaderboardBtn = createDialogButton("Xếp hạng", new Color(33, 109, 185));
         leaderboardBtn.addActionListener(e -> {
             new LeaderboardDialog(dialog, playerName).setVisible(true);
         });
         buttonPanel.add(leaderboardBtn);
 
-        // Nút giải phóng ván đấu để quay về giao diện Menu chính
+        // Nút Về menu
         JButton menuBtn = createDialogButton("Menu", new Color(120, 60, 20));
         menuBtn.addActionListener(e -> {
             dialog.dispose();
-            dispose(); 
+            dispose(); // Đóng game, windowClosed sẽ mở lại MainMenu
         });
         buttonPanel.add(menuBtn);
 
@@ -708,6 +627,7 @@ public class OthelloGame extends JFrame {
         dialog.setVisible(true);
     }
 
+    // UC-04: Tạo nút cho dialog kết quả trận đấu
     private JButton createDialogButton(String text, Color bgColor) {
         JButton btn = new JButton(text);
         btn.setFont(new Font("Arial", Font.BOLD, 14));
@@ -720,15 +640,16 @@ public class OthelloGame extends JFrame {
         return btn;
     }
 
-    // Setter cho tên người chơi (được gọi từ điều hướng MainMenu / UC-01)
+    // UC-05: Setter cho tên người chơi (được gọi từ MainMenu/UC-01)
     public void setPlayerName(String name) {
-        if (name != null && !name.trim().isEmpty()) {
-            this.playerName = name.trim();
-        }
+        this.playerName = name;
     }
 
-    // [5.1.0] Mở trực tiếp màn hình xem bảng xếp hạng trong game
+    // UC-05 5.1.0: Mở bảng xếp hạng từ game
     public void openLeaderboard() {
         new LeaderboardDialog(this, playerName).setVisible(true);
     }
+
+    // UC-08: Thoát ứng dụng (Exit application)
+
 }
