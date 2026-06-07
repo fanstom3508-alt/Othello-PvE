@@ -128,14 +128,19 @@ public class ComputerPlayer extends Player {
         }).start();
     }
 
-    public int minimax(boolean maxmin, Node state, int depth) {
+    // 23130186_TranLeMinhMan_ThemMoi bổ sung phát triển thêm hàm minimax 
+    public int minimax(boolean maxmin, Node state, int depth, long startTimeMs) {
+    	// [23130186_TranLeMinhMan_Cập nhật] KIỂM TRA THỜI GIAN: Nếu lố 1800ms (1.8s) thì ném lỗi ngắt ngay lập tức
+    	if (System.currentTimeMillis() - startTimeMs > 1800) {
+            throw new SearchTimeoutException();
+        }
         if (depth == 0 || state.getBoard().isGameOver()) {
             return heuristic(state);
         }
         int curColor = maxmin ? this.color : getOppColor();
         List<int[]> posMoves = state.getBoard().getValidMoves(curColor);
         if (posMoves.isEmpty()) {
-            return minimax(!maxmin, state, depth - 1);
+            return minimax(!maxmin, state, depth - 1, startTimeMs);
         }
         if (maxmin) { // MAX
             int temp = -99999999;
@@ -145,7 +150,7 @@ public class ComputerPlayer extends Player {
                 Node child = new Node(childBoard, move, curColor);
 
                 // đệ quy
-                int value = minimax(false, child, depth - 1);
+                int value = minimax(false, child, depth - 1,startTimeMs);
                 temp = Math.max(temp, value);
             }
             return temp;
@@ -158,7 +163,7 @@ public class ComputerPlayer extends Player {
                 Node child = new Node(childBoard, move, curColor);
 
                 // đệ quy
-                int value = minimax(true, child, depth - 1);
+                int value = minimax(true, child, depth - 1, startTimeMs);
                 temp = Math.min(temp, value);
             }
             return temp;
