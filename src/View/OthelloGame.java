@@ -405,7 +405,39 @@ public class OthelloGame extends JFrame {
             });
         }
     }
-
+    //Điều chỉnh thời gian phản hồi
+//        if (curPlayer == computerPlayer.getColor()) { 
+//            computerPlayer.makeMove(board, new MoveCallBack() {
+//                @Override
+//                public void onMove(int row, int col) {
+//                    // Sử dụng javax.swing.Timer để tạo độ trễ 1 giây (1000 milliseconds)
+//                    // Timer này an toàn cho luồng UI (EDT) và không gây đóng băng giao diện
+//                    Timer delayTimer = new Timer(1000, e -> {
+//                        if (row != -1 && col != -1) {
+//                            // Lưu trạng thái nước đi cuối cùng
+//                            lastMoveRow = row;
+//                            lastMoveCol = col;
+//                            lastMovePlayer = curPlayer;
+//                            lastMoveFlipped = board.getFlippableCount(row, col, curPlayer);         
+//                          
+//                            // Thực hiện đặt cờ lên bàn cờ thật
+//                            board.makeMove(row, col, curPlayer);
+//                        }
+//
+//                        // Cập nhật nhãn lịch sử đi cờ
+//                        updateLastMoveLabels();
+//                    
+//                        // Đổi phiên và bắt đầu lại vòng lặp cho Người
+//                        board.switchPlayer();
+//                        TurnBegin(); 
+//                    });
+//                    
+//                    delayTimer.setRepeats(false); // Bắt buộc: Chỉ chạy 1 lần rồi tắt
+//                    delayTimer.start(); // Bắt đầu đếm ngược 1 giây
+//                }
+//            });
+//        }
+//    }
     // UC-1.15: Cập nhật nhãn hiển thị vị trí nước vừa đi và số quân ăn được
     // UC-3.10, UC-3.34 (Trước khi phát triển) : Cập nhật giao diện hiển thị thông tin nước đi cuối cùng
     // UC-3.35 (Trước khi phát triển) : Cập nhật giao diện hiển thị thông tin nước đi cuối cùng
