@@ -12,7 +12,10 @@ public class ComputerPlayer extends Player {
         super(color);
     }
 
-    private final int MAXDEPTH = 5;
+    // Tác giả: Phan Quang Huy – UC-02 Extension: Cấu hình độ khó AI
+    // Code cũ: private final int MAXDEPTH = 5;
+    // Nếu merge bị conflict ở dòng dưới, giữ nguyên dòng này, xóa dòng của nhánh kia.
+    private int MAXDEPTH = Controller.GameSession.getDifficulty();
     private final int Pos_Infinity = 99999999;
     private final int Neg_Infinity = -99999999;
 
