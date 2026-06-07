@@ -12,13 +12,51 @@ public class ComputerPlayer extends Player {
         super(color);
     }
 
+
+    // [23130186_TranLeMinhMan_Thêm Mới] Exception dùng để báo hiệu khi quá thời gian 1.8s
+    public static class SearchTimeoutException extends RuntimeException {}
+
     // Tác giả: Phan Quang Huy – UC-02 Extension: Cấu hình độ khó AI
     // Code cũ: private final int MAXDEPTH = 5;
     // Nếu merge bị conflict ở dòng dưới, giữ nguyên dòng này, xóa dòng của nhánh kia.
     private int MAXDEPTH = Controller.GameSession.getDifficulty();
+
     private final int Pos_Infinity = 99999999;
     private final int Neg_Infinity = -99999999;
+    
+    // [23130186_TranLeMinhMan_Thêm Mới] UC-3.20 Hàm thực hiện tìm kiếm và trả về nước đi tốt nhất tại một độ sâu cụ thể
+    // [23130186_TranLeMinhMan_Cập nhật] Thêm tham số long startTimeMs
+    	private int[] searchAtDepth(Board board, int depth, List<int[]> validMoves, long startTimeMs) {
+        int bestValue = Neg_Infinity; // Khởi tạo giá trị tệ nhất
+        int[] bestMove = validMoves.get(0); // Lấy tạm nước đi đầu tiên phòng hờ
 
+        for (int[] move : validMoves) {
+            Board child = board.copy();
+            child.makeMove(move[0], move[1], color);
+            Node childNode = new Node(child, move, color);
+            
+            // Gọi thuật toán Alpha-Beta cho nước đi này.
+            // Bước tiếp theo là lượt của người chơi (min) nên maxmin = false
+            // [23130186_TranLeMinhMan_Cập nhật] Truyền startTimeMs xuống cho alphaBeta
+            int value = alphaBeta(false, childNode, depth - 1, Neg_Infinity, Pos_Infinity, startTimeMs);
+            if (value > bestValue) {
+                bestValue = value;
+                bestMove = move;
+            }
+        }
+        return bestMove;
+    }
+
+    // UC-3.18 : Kích hoạt luồng Thread ngầm tính toán nước đi cho Máy
+    // 23130186_TranLeMinhMan_CapNhatThem
+    	/**
+         * Điểm khác biệt & Cải tiến cốt lõi:
+         * 1. Threading: Chạy trên luồng ngầm (Asynchronous) giúp không bị treo giao diện (UI).
+         * 2. Iterative Deepening: Đào sâu lặp dần (từ d=1 đến MAXDEPTH) thay vì chốt chết 1 độ sâu.
+         * 3. Timeout Handling: Bắt exception ngắt đệ quy khẩn cấp nếu tính toán vượt 1.8s (Đảm bảo NFR-01).
+         * 4. Fallback: Tự động dùng `bestMoveSoFar` (nước đi an toàn gần nhất) nếu bị hết giờ.
+         * 5. Profiling: Đo lường RAM, thời gian thực thi (ms) và in log thống kê chi tiết.
+         */
     @Override
     public void makeMove(Board board, MoveCallBack callBack) {
         new Thread(() -> {
@@ -27,48 +65,96 @@ public class ComputerPlayer extends Player {
 
             long memBefore = rt.totalMemory() - rt.freeMemory();
             long startTime = System.nanoTime();
+            
+            //[23130186_TranLeMinhMan_Thêm Mới] Lấy thời gian bắt đầu bằng mili-giây
+            long startTimeMs = System.currentTimeMillis();
 
             List<int[]> validMoves = board.getValidMoves(color);
             if (validMoves.isEmpty()) {
                 callBack.onMove(-1, -1);
                 return;
             }
-            int bestValue = Integer.MIN_VALUE;
-            int[] bestMove = null;
+            // Code của bạn cũ
+            
+//            int bestValue = Integer.MIN_VALUE;
+//            int[] bestMove = null;
+       
+//            for (int[] move : validMoves) {
+//                Board child = board.copy();
+//                child.makeMove(move[0], move[1], color);
+//                Node childNode = new Node(child, move, color);
+//                // chuyển sang min người
+//                int value = alphaBeta(false, childNode, MAXDEPTH - 1, Neg_Infinity, Pos_Infinity);
+//
+//                if (value > bestValue) {
+//                    bestValue = value;
+//                    bestMove = move;
+//                }
+//            }
+            /*
+             * [23130186_TranLeMinhMan_Thêm Mới] Code được phát triển tiếp 
+             */
+            int[] bestMoveSoFar = validMoves.get(0); // Khởi tạo mốc lưu trữ nước đi tốt nhất
+            int actualDepthReached = 0; // [Thêm mới] Biến lưu lại độ sâu lớn nhất đã hoàn thành
 
-            for (int[] move : validMoves) {
-                Board child = board.copy();
-                child.makeMove(move[0], move[1], color);
-                Node childNode = new Node(child, move, color);
-                // chuyển sang min người
-                int value = alphaBeta(false, childNode, MAXDEPTH - 1, Neg_Infinity, Pos_Infinity);
-
-                if (value > bestValue) {
-                    bestValue = value;
-                    bestMove = move;
-                }
+            //[23130186_TranLeMinhMan_Thêm Mới] Bắt ngoại lệ TimeoutException hoặc xử lý flag dừng ở hàm makeMove
+            try {
+            // Vòng lặp Iterative Deepening
+	            for (int d = 1; d <= MAXDEPTH; d++) {
+	                // Tìm kiếm nước đi tốt nhất ở độ sâu 'd' hiện tại
+	            	// Truyền startTimeMs vào hàm searchAtDepth
+	            	int[] currentBestMove = searchAtDepth(board, d, validMoves, startTimeMs);
+	                
+	            	// Chỉ khi tìm kiếm TRỌN VẸN độ sâu 'd' mà không bị ngắt, lệnh gán này mới được chạy
+	                if (currentBestMove != null) {
+	                    bestMoveSoFar = currentBestMove;
+	                    actualDepthReached = d; // Cập nhật độ sâu thực tế đã hoàn thành trọn vẹn
+	                }
+	                
+	                // In ra để thấy AI đang đào sâu dần
+	                System.out.println("Đã hoàn thành tìm kiếm ở độ sâu: " + d);
+	            }
+            } catch (SearchTimeoutException e) {
+                // Đã bị ngắt do lố 1.8 giây!
+                // Vòng lặp for bị phá vỡ ngay lập tức. Các hàm đệ quy sâu bên trong đều dừng lại.
+                System.out.println("Timeout Đã quá 1.8 giây! Dừng khẩn cấp thuật toán đệ quy, lấy kết quả tốt nhất để đánh");
             }
+
+            // Đánh dấu thời gian, bộ nhớ kết thúc và in ra kết quả
             long endTime = System.nanoTime();
             long memAfter = rt.totalMemory() - rt.freeMemory();
 
             long timeMs = (endTime - startTime) / 1_000_000;
             long memKB = (memAfter - memBefore) / 1024;
+            
+            // log để xem hiệu suất chính xác
+            System.out.println("\n THỐNG KÊ LƯỢT ĐI CỦA AI");
+            System.out.println("Nhánh AI màu cờ : " + (color == Board.BLACK ? "Đen (1)" : "Trắng (2)"));
+            System.out.println("AI chốt nước đi : (" + bestMoveSoFar[0] + ", " + bestMoveSoFar[1] + ")");
+            System.out.println("Đạt tới độ sâu  : " + actualDepthReached + " (Max: " + MAXDEPTH + ")");
+            System.out.println("Thời gian xử lý : " + timeMs + " ms");
+            System.out.println("Bộ nhớ sử dụng  : " + memKB + " KB");
+            System.out.println("\n");
 
-            System.out.println("Executed Time : " + timeMs + " ms");
-            System.out.println("Memory Used   : " + memKB + " KB");
-
-            callBack.onMove(bestMove[0], bestMove[1]);
+            // Gửi kết quả tốt nhất cuối cùng thu được cho UI
+            callBack.onMove(bestMoveSoFar[0], bestMoveSoFar[1]);
+            
         }).start();
     }
 
-    public int minimax(boolean maxmin, Node state, int depth) {
+    // 23130186_TranLeMinhMan_ThemMoi bổ sung phát triển thêm hàm minimax 
+    public int minimax(boolean maxmin, Node state, int depth, long startTimeMs) {
+    	// [23130186_TranLeMinhMan_Cập nhật] KIỂM TRA THỜI GIAN: Nếu lố 1800ms (1.8s) thì ném lỗi ngắt ngay lập tức
+    	if (System.currentTimeMillis() - startTimeMs > 1800) {
+            throw new SearchTimeoutException();
+        }
         if (depth == 0 || state.getBoard().isGameOver()) {
             return heuristic(state);
         }
         int curColor = maxmin ? this.color : getOppColor();
         List<int[]> posMoves = state.getBoard().getValidMoves(curColor);
         if (posMoves.isEmpty()) {
-            return minimax(!maxmin, state, depth - 1);
+            return minimax(!maxmin, state, depth - 1, startTimeMs);
         }
         if (maxmin) { // MAX
             int temp = -99999999;
@@ -78,7 +164,7 @@ public class ComputerPlayer extends Player {
                 Node child = new Node(childBoard, move, curColor);
 
                 // đệ quy
-                int value = minimax(false, child, depth - 1);
+                int value = minimax(false, child, depth - 1,startTimeMs);
                 temp = Math.max(temp, value);
             }
             return temp;
@@ -91,23 +177,31 @@ public class ComputerPlayer extends Player {
                 Node child = new Node(childBoard, move, curColor);
 
                 // đệ quy
-                int value = minimax(true, child, depth - 1);
+                int value = minimax(true, child, depth - 1, startTimeMs);
                 temp = Math.min(temp, value);
             }
             return temp;
         }
     }
 
-    // Cắt tỉa alpha Beta 	
-    public int alphaBeta(boolean maxmin, Node state, int depth, int alpha, int beta) {
+    // UC-3.22 (Trước khi phát triển): Thuật toán Alpha-Beta Pruning tìm độ sâu tối ưu
+    // [23130186_TranLeMinhMan_Cập nhật] (Sau khi phát triển) UC-3.23: Thêm tham số long startTimeMs
+    public int alphaBeta(boolean maxmin, Node state, int depth, int alpha, int beta, long startTimeMs) {
+    	// [23130186_TranLeMinhMan_Cập nhật] KIỂM TRA THỜI GIAN: Nếu lố 1800ms (1.8s) thì ném lỗi ngắt ngay lập tức
+    	if (System.currentTimeMillis() - startTimeMs > 1800) {
+            throw new SearchTimeoutException();
+        }
+    	
         if (depth == 0 || state.getBoard().isGameOver()) {
             return heuristic(state);
         }
+        
         int curColor = maxmin ? color : getOppColor();
         List<int[]> posMove = state.getBoard().getValidMoves(curColor);
 
         if (posMove.isEmpty()) {
-            return alphaBeta(!maxmin, state, depth - 1, alpha, beta);
+        	// [23130186_TranLeMinhMan_Cập nhật]  thêm startTimeMs vào đệ quy
+        	return alphaBeta(!maxmin, state, depth - 1, alpha, beta, startTimeMs);
         }
         if (maxmin) {    // MAX
             int temp = -99999999;
@@ -116,7 +210,8 @@ public class ComputerPlayer extends Player {
                 childBoard.makeMove(move[0], move[1], curColor);
                 Node child = new Node(childBoard, move, curColor);
 
-                temp = Math.max(temp, alphaBeta(false, child, depth - 1, alpha, beta));
+             // [23130186_TranLeMinhMan_Cập nhật] Thêm startTimeMs vào đệ quy
+                temp = Math.max(temp, alphaBeta(false, child, depth - 1, alpha, beta, startTimeMs));
                 // cập nhật alpha
                 alpha = Math.max(alpha, temp);
                 // cắt
@@ -132,7 +227,8 @@ public class ComputerPlayer extends Player {
                 childBoard.makeMove(move[0], move[1], curColor);
                 Node child = new Node(childBoard, move, curColor);
 
-                temp = Math.min(temp, alphaBeta(true, child, depth - 1, alpha, beta));
+             // [23130186_TranLeMinhMan_Cập nhật] Thêm startTimeMs vào đệ quy
+                temp = Math.min(temp, alphaBeta(true, child, depth - 1, alpha, beta, startTimeMs));
                 // cập nhật alpha
                 beta = Math.min(beta, temp);
                 // cắt
@@ -148,6 +244,8 @@ public class ComputerPlayer extends Player {
         return this.color == Board.WHITE ? Board.BLACK : Board.WHITE;
     }
 
+    // UC-3.23 (Trước khi phát triển): Hàm lượng giá đánh giá mức độ lợi thế của trạng thái bàn cờ
+    // UC-3.24 (Sau khi phát triển): Hàm lượng giá đánh giá mức độ lợi thế của trạng thái bàn cờ
     private int heuristic(Node state) {
         Board board = state.getBoard();
         int[] score = board.getScore();
