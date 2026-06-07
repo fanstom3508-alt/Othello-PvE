@@ -258,11 +258,6 @@ public class MainMenu extends JFrame {
         GameSession.setPlayerName(playerName);
         GameSession.setPlayerColor(playerColor);
 
-        // Khởi tạo và hiển thị màn hình game
-        dispose();
-        SwingUtilities.invokeLater(() ->
-                new OthelloGame(playerColor).setVisible(true)
-        );
         // Tác giả: Phan Quang Huy – UC-02 Extension: Chọn độ khó AI
         int depth;
         while (true) {
@@ -286,8 +281,8 @@ public class MainMenu extends JFrame {
                         JOptionPane.YES_NO_OPTION);
 
                 if (confirm == JOptionPane.YES_OPTION) {
-                    // Nếu [Có]: depth = 10
-                    depth = 10;
+                    // Nếu [Có]: depth = 20
+                    depth = 20;
                     break;
                 } else {
                     // Nếu [Không]: kết thúc use case (return).
@@ -295,9 +290,9 @@ public class MainMenu extends JFrame {
                 }
             }
 
-            if (diffChoice == 0) depth = 3;
-            else if (diffChoice == 1) depth = 5;
-            else depth = 10;
+            if (diffChoice == 0) depth = 5;
+            else if (diffChoice == 1) depth = 10;
+            else depth = 20;
             break;
         }
 
@@ -306,7 +301,7 @@ public class MainMenu extends JFrame {
 
         // Tác giả: Phan Quang Huy – UC-02 Extension: Hộp thoại tóm tắt xác nhận thông tin ván đấu
         // 2.1.11 Hệ thống hiển thị hộp thoại tóm tắt thông tin và yêu cầu xác nhận
-        String diffStr = depth == 3 ? "Dễ" : (depth == 5 ? "Trung bình" : "Khó");
+        String diffStr = depth == 5 ? "Dễ" : (depth == 10 ? "Trung bình" : "Khó");
         String colorStr = playerColor == Board.BLACK ? "Đen (Đi trước)" : "Trắng (Đi sau)";
         String summary = String.format("Xác nhận thông tin ván đấu:\n\n" +
                                        "  • Người chơi: %s\n" +
