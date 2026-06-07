@@ -168,13 +168,6 @@ public class MainMenu extends JFrame {
     }
 
     // UC-1.1: Khởi động ván game mới, tạo đối tượng OthelloGame và chuyển sang màn hình chơi
-    // UC-02: Player chọn "Chơi với máy" và nhập tên hiển thị
-    private void startGame() {
-        // 2.1 Player chọn "Chơi với máy" từ MainMenu (method này được gọi khi click btnPlay)
-        String playerName;
-
-        while (true) {
-            // 2.2 System hiển thị hộp thoại nhập tên
     // UC-02: Player chọn "Chơi với máy", nhập tên hiển thị và chọn màu
     private void startGame() {
         // 2.1.1 Player nhấn nút "Chơi với máy" từ màn hình chính → UC-02 được kích hoạt
