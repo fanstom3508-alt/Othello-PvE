@@ -12,24 +12,26 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-// UC-04 / UC-05: Quan ly bang diem cao, luu va doc file cuc bo.
-//Phục vụ chính cho UC-05 (Xem bảng xếp hạng) và UC-07 (Đồng bộ trạng thái trận đấu).
+/**
+ * UC-04 / UC-05: Quản lý bảng điểm cao, lưu và đọc file cục bộ.
+ * Phục vụ chính cho UC-05 (Xem bảng xếp hạng) và UC-07 (Đánh giá & thoát ván đấu an toàn).
+ */
 public class HighScoreManager {
     private static final String FILE_NAME = "highscores.dat";
     private static final int MAX_ENTRIES = 10;
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy HH:mm");
 
     public static class ScoreEntry implements Comparable<ScoreEntry> {
-        String playerName;
-        int score;
-        Date date;
+        public String playerName;
+        public int score;
+        public Date date;
 
-     // Cải tiến cấu trúc dữ liệu: Bổ sung thống kê để phục vụ luồng [5.1.5] và [5.1.6] của UC-05 (lọc theo hồ sơ người chơi).
-        int totalMatches;
-        int wins;
-        int losses;
-        int currentWinStreak;
-        int maxWinStreak;
+        // Cải tiến cấu trúc dữ liệu: Bổ sung thống kê để phục vụ luồng [5.1.5] và [5.1.6] của UC-05.
+        public int totalMatches;
+        public int wins;
+        public int losses;
+        public int currentWinStreak;
+        public int maxWinStreak;
 
         public ScoreEntry(String playerName, int score, Date date) {
             this(playerName, score, date, 1, 0, 0, 0, 0);
@@ -47,44 +49,21 @@ public class HighScoreManager {
             this.maxWinStreak = maxWinStreak;
         }
 
-        public String getPlayerName() {
-            return playerName;
-        }
+        public String getPlayerName() { return playerName; }
+        public int getScore() { return score; }
+        public Date getDate() { return date; }
+        public int getTotalMatches() { return totalMatches; }
+        public int getWins() { return wins; }
+        public int getLosses() { return losses; }
+        public int getCurrentWinStreak() { return currentWinStreak; }
+        public int getMaxWinStreak() { return maxWinStreak; }
 
-        public int getScore() {
-            return score;
-        }
-
-        public Date getDate() {
-            return date;
-        }
-
-        public int getTotalMatches() {
-            return totalMatches;
-        }
-
-        public int getWins() {
-            return wins;
-        }
-
-        public int getLosses() {
-            return losses;
-        }
-
-        public int getCurrentWinStreak() {
-            return currentWinStreak;
-        }
-
-        public int getMaxWinStreak() {
-            return maxWinStreak;
-        }
-
-     // Trận hòa được suy ra từ tổng trận, thắng và thua.
+        // Trận hòa được suy ra từ tổng trận, thắng và thua.
         public int getDraws() {
             return Math.max(0, totalMatches - wins - losses);
         }
 
-     // Phục vụ cho bộ lọc bảng xếp hạng của luồng [5.1.7] UC-05.
+        // Phục vụ cho bộ lọc bảng xếp hạng của luồng [5.1.7] UC-05.
         public double getWinRate() {
             if (totalMatches == 0) {
                 return 0.0;
@@ -101,147 +80,68 @@ public class HighScoreManager {
         }
     }
 
- // [5.1.2] Được LeaderboardDialog gọi để tải danh sách kỷ lục.
-    public static List<ScoreEntry> loadScores() {
+    // [5.1.2] Bộ điều khiển giao diện gọi phương thức tĩnh này để bắt đầu tải danh sách kỷ lục
+    public static synchronized List<ScoreEntry> loadScores() {
         List<ScoreEntry> scores = new ArrayList<>();
         File file = new File(FILE_NAME);
+        
+        // [5.2.1.1] Tệp dữ liệu kỷ lục highscores.dat chưa tồn tại: tự động khởi tạo danh sách mảng rỗng và trả về an toàn
         if (!file.exists()) {
-            return scores;// [5.2.1] Nếu file chưa tồn tại (Ván đầu tiên)
+            return scores;
         }
 
+        // [5.1.3] Hệ thống thực hiện mở tệp cục bộ highscores.dat, đọc tuần tự dữ liệu và phân tích thành ScoreEntry
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             String line;
-         // [5.1.3] Thực hiện mở tệp cục bộ, đọc tuần tự dữ liệu và phân tích (parse) thành ScoreEntry.
             while ((line = reader.readLine()) != null) {
-                line = line.trim();
-                if (line.isEmpty()) {
-                    continue;
-                }
-
+                if (line.trim().isEmpty()) continue;
                 String[] parts = line.split("\\|");
-                if (parts.length >= 3) {
-                    String name = parts[0].trim();
-                    int score = Integer.parseInt(parts[1].trim());
-                    Date date = DATE_FORMAT.parse(parts[2].trim());
-                 // Đọc tương thích cả file cũ 3 cột và file mới 8 cột để không làm hỏng dữ liệu đã có.
-                    if (parts.length >= 8) {
-                        int totalMatches = Integer.parseInt(parts[3].trim());
-                        int wins = Integer.parseInt(parts[4].trim());
-                        int losses = Integer.parseInt(parts[5].trim());
-                        int currentWinStreak = Integer.parseInt(parts[6].trim());
-                        int maxWinStreak = Integer.parseInt(parts[7].trim());
-                        scores.add(new ScoreEntry(name, score, date, totalMatches, wins, losses,
-                                currentWinStreak, maxWinStreak));
-                    } else {
-                        scores.add(new ScoreEntry(name, score, date));
-                    }
+                if (parts.length >= 8) {
+                    String name = parts[0];
+                    int score = Integer.parseInt(parts[1]);
+                    Date date = DATE_FORMAT.parse(parts[2]);
+                    int totalMatches = Integer.parseInt(parts[3]);
+                    int wins = Integer.parseInt(parts[4]);
+                    int losses = Integer.parseInt(parts[5]);
+                    int currentWinStreak = Integer.parseInt(parts[6]);
+                    int maxWinStreak = Integer.parseInt(parts[7]);
+
+                    scores.add(new ScoreEntry(name, score, date, totalMatches, wins, losses, currentWinStreak, maxWinStreak));
                 }
             }
+        } catch (IOException e) {
+            // [5.2.1.1] Bắt ngoại lệ IOException, tự động khởi tạo danh sách mảng rỗng (new ArrayList<>()) và trả về an toàn.
+            System.err.println("Ngoại lệ IO khi đọc file: " + e.getMessage());
+            return new ArrayList<>();
         } catch (Exception e) {
-        	// [5.2.1.1] Bắt ngoại lệ IOException/Parse, tự động khởi tạo danh sách mảng rỗng trả về an toàn.
-            System.err.println("Loi doc file diem cao: " + e.getMessage());
+            System.err.println("Lỗi định dạng dữ liệu file: " + e.getMessage());
+            return new ArrayList<>();
         }
-
-        Collections.sort(scores);
         return scores;
     }
 
- // Ghi file 8 cột, giữ lại toàn bộ lịch sử (không cắt Top 10) để bảo toàn tổng quan dữ liệu người chơi.
-    private static void saveScores(List<ScoreEntry> scores) {
-        Collections.sort(scores);
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_NAME))) {
-            for (ScoreEntry entry : scores) {
-                writer.write(entry.playerName + "|"
-                        + entry.score + "|"
-                        + DATE_FORMAT.format(entry.date) + "|"
-                        + entry.totalMatches + "|"
-                        + entry.wins + "|"
-                        + entry.losses + "|"
-                        + entry.currentWinStreak + "|"
-                        + entry.maxWinStreak);
-                writer.newLine();
-            }
-        } catch (IOException e) {
-            System.err.println("Loi ghi file diem cao: " + e.getMessage());
+    // [5.1.4] Mặc định ban đầu, hệ thống gọi hàm sắp xếp danh sách theo tiêu chí điểm số giảm dần ("SCORE") và cắt lấy tối đa 10 bản ghi đầu tiên.
+    public static List<ScoreEntry> getTopScores() {
+        List<ScoreEntry> scores = getSortedLeaderboard("SCORE");
+        if (scores.size() > MAX_ENTRIES) {
+            return new ArrayList<>(scores.subList(0, MAX_ENTRIES));
         }
-    }
- // KHỐI HÀM LƯU ĐIỂM - LIÊN QUAN CHẶT CHẼ ĐẾN UC-07
-    public static boolean addScore(String playerName, int score) {
-        return saveMatchResult(playerName, score, false, false, false);
+        return scores;
     }
 
-    public static boolean addScore(String playerName, int score, boolean playerWon, boolean playerLost) {
-        return saveMatchResult(playerName, score, true, playerWon, playerLost);
-    }
-
-    public static boolean addMatchResult(String playerName, int score, boolean playerWon, boolean playerLost) {
-        return saveMatchResult(playerName, score, true, playerWon, playerLost);
-    }
-
- // [7.1.4] Áp dụng quy tắc BRule-07: Hàm này KHÔNG ĐƯỢC GỌI nếu người chơi thoát khi trận đấu dang dở (gameEnded == false).
-    // [7.2.1.1] Hàm này chỉ được thực thi hợp lệ từ UC-04 khi ván đấu đã kết thúc hoàn toàn (gameEnded == true).
-    private static boolean saveMatchResult(String playerName, int score, boolean updateStats, boolean playerWon,
-            boolean playerLost) {
-        List<ScoreEntry> scores = loadScores();
-        ScoreEntry existing = findByName(scores, playerName);
-
-        if (existing == null) {
-            existing = new ScoreEntry(playerName, score, new Date(), 0, 0, 0, 0, 0);
-            scores.add(existing);
-        }
-
-        if (updateStats) {
-            applyMatchStats(existing, playerWon, playerLost);
-        }
-
-        if (score > existing.score) {
-            existing.score = score;
-            existing.date = new Date();
-        }
-
-        Collections.sort(scores);
-        saveScores(scores);
-        int rank = scores.indexOf(existing);
-        return rank >= 0 && rank < MAX_ENTRIES;// Trả về true nếu lọt Top 10
-    }
-
-    private static ScoreEntry findByName(List<ScoreEntry> scores, String playerName) {
-        for (ScoreEntry entry : scores) {
-            if (entry.getPlayerName().equals(playerName)) {
-                return entry;
-            }
-        }
-        return null;
-    }
-
- // Cập nhật thống kê trận đấu mà không can thiệp vào logic của Board hay Player.
-    private static void applyMatchStats(ScoreEntry entry, boolean playerWon, boolean playerLost) {
-        entry.totalMatches++;
-        if (playerWon) {
-            entry.wins++;
-            entry.currentWinStreak++;
-            entry.maxWinStreak = Math.max(entry.maxWinStreak, entry.currentWinStreak);
-        } else {
-            if (playerLost) {
-                entry.losses++;
-            }
-            entry.currentWinStreak = 0;
-        }
-    }
- // KHỐI HÀM LỌC BẢNG XẾP HẠNG - LIÊN QUAN CHẶT CHẼ ĐẾN UC-05
-    // UC-05 cai tien: ho tro loc bang xep hang theo diem, ty le thang, tong thang va chuoi thang.
- // [5.1.7] Hàm xử lý tái cấu trúc bảng điểm dựa trên tiêu chí mới (criterion) được truyền vào.
+    // KHỐI HÀM LỌC BẢNG XẾP HẠNG - LIÊN QUAN CHẶT CHẼ ĐẾN UC-05
+    // [5.1.7] Hệ thống bắt sự kiện thay đổi, gọi hàm xử lý tái cấu trúc bảng điểm dựa trên tiêu chí mới được truyền vào.
     public static List<ScoreEntry> getSortedLeaderboard(String criteria) {
         List<ScoreEntry> scores = loadScores();
         String key = criteria == null ? "SCORE" : criteria.toUpperCase();
 
-        // [5.1.8] Áp dụng bộ so sánh dữ liệu (Comparator) tương ứng để sắp xếp lại danh sách ScoreEntry.
+        // [5.1.8] Lớp nghiệp vụ áp dụng bộ so sánh dữ liệu (Comparator) tương ứng để sắp xếp lại danh sách ScoreEntry theo tiêu chí mới.
         switch (key) {
             case "WIN_RATE":
                 scores.sort((e1, e2) -> {
                     int comp = Double.compare(e2.getWinRate(), e1.getWinRate());
                     if (comp != 0) return comp;
-                    return Integer.compare(e2.getWins(), e1.getWins());
+                    return Integer.compare(e2.getScore(), e1.getScore());
                 });
                 break;
             case "TOTAL_WINS":
@@ -266,20 +166,94 @@ public class HighScoreManager {
         return scores;
     }
 
-    // [5.1.4] Mặc định ban đầu, sắp xếp theo "SCORE" giảm dần và cắt lấy tối đa 10 bản ghi đầu tiên.
-    public static List<ScoreEntry> getTopScores() {
-        List<ScoreEntry> scores = getSortedLeaderboard("SCORE");
-        if (scores.size() > MAX_ENTRIES) {
-            return new ArrayList<>(scores.subList(0, MAX_ENTRIES));
+    // Ghi file toàn bộ 8 cột dữ liệu để duy trì lịch sử tổng quan của người chơi.
+    private static void saveScores(List<ScoreEntry> scores) {
+        Collections.sort(scores);
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_NAME))) {
+            for (ScoreEntry entry : scores) {
+                writer.write(entry.playerName + "|"
+                        + entry.score + "|"
+                        + DATE_FORMAT.format(entry.date) + "|"
+                        + entry.totalMatches + "|"
+                        + entry.wins + "|"
+                        + entry.losses + "|"
+                        + entry.currentWinStreak + "|"
+                        + entry.maxWinStreak);
+                writer.newLine();
+            }
+        } catch (IOException e) {
+            System.err.println("Lỗi ghi file điểm cao: " + e.getMessage());
         }
-        return scores;
+    }
+
+    // KHỐI HÀM LƯU ĐIỂM KỶ LỤC VÀ ĐỒNG BỘ TRẬN ĐẤU - LIÊN QUAN CHẶT CHẼ ĐẾN UC-07
+    public static boolean addScore(String playerName, int score) {
+        return saveMatchResult(playerName, score, false, false, false);
+    }
+
+    public static boolean addScore(String playerName, int score, boolean playerWon, boolean playerLost) {
+        return saveMatchResult(playerName, score, true, playerWon, playerLost);
+    }
+
+    public static boolean addMatchResult(String playerName, int score, boolean playerWon, boolean playerLost) {
+        return saveMatchResult(playerName, score, true, playerWon, playerLost);
+    }
+
+    // [7.1.4] Áp dụng quy tắc BRule-07: Hệ thống trực tiếp bỏ qua việc gọi hàm HighScoreManager.addScore(), điểm số của trận đấu dở dang không được phép ghi lại nếu người chơi nhấn dứt khoát huỷ trận (gameEnded == false).
+    // [7.2.1] Trận đấu đã kết thúc trước đó (gameEnded == true) khi người chơi chọn lệnh quay về menu hoặc hoàn thành bình thường, hàm này mới được thực thi hợp lệ.
+    private static boolean saveMatchResult(String playerName, int score, boolean updateStats, boolean playerWon, boolean playerLost) {
+        List<ScoreEntry> scores = loadScores();
+        ScoreEntry existing = findByName(scores, playerName);
+
+        if (existing == null) {
+            existing = new ScoreEntry(playerName, score, new Date(), 0, 0, 0, 0, 0);
+            scores.add(existing);
+        }
+
+        if (updateStats) {
+            applyMatchStats(existing, playerWon, playerLost);
+        }
+
+        if (score > existing.score) {
+            existing.score = score;
+            existing.date = new Date();
+        }
+
+        Collections.sort(scores);
+        saveScores(scores);
+        int rank = scores.indexOf(existing);
+        return rank >= 0 && rank < MAX_ENTRIES; // Trả về true nếu lọt vào top 10 bảng xếp hạng
+    }
+
+    private static ScoreEntry findByName(List<ScoreEntry> scores, String playerName) {
+        for (ScoreEntry entry : scores) {
+            if (entry.getPlayerName().equalsIgnoreCase(playerName)) {
+                return entry;
+            }
+        }
+        return null;
+    }
+
+    // Cập nhật thống kê trận đấu phục vụ lâu dài cho hồ sơ người chơi.
+    private static void applyMatchStats(ScoreEntry entry, boolean playerWon, boolean playerLost) {
+        entry.totalMatches++;
+        if (playerWon) {
+            entry.wins++;
+            entry.currentWinStreak++;
+            entry.maxWinStreak = Math.max(entry.maxWinStreak, entry.currentWinStreak);
+        } else {
+            if (playerLost) {
+                entry.losses++;
+            }
+            entry.currentWinStreak = 0;
+        }
     }
 
     public static int getBestScore(String playerName) {
         List<ScoreEntry> scores = loadScores();
         int best = -1;
         for (ScoreEntry entry : scores) {
-            if (entry.playerName.equals(playerName) && entry.score > best) {
+            if (entry.playerName.equalsIgnoreCase(playerName) && entry.score > best) {
                 best = entry.score;
             }
         }
