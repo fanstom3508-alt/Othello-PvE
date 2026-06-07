@@ -258,11 +258,6 @@ public class MainMenu extends JFrame {
         GameSession.setPlayerName(playerName);
         GameSession.setPlayerColor(playerColor);
 
-        // Khởi tạo và hiển thị màn hình game
-        dispose();
-        SwingUtilities.invokeLater(() ->
-                new OthelloGame(playerColor).setVisible(true)
-        );
         // Tác giả: Phan Quang Huy – UC-02 Extension: Chọn độ khó AI
         int depth;
         while (true) {
