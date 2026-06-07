@@ -35,6 +35,7 @@ public class Board {
     }
 
     // UC-1.17, UC-1.25: Trả về màu của người chơi đang có lượt đi
+    // UC-3.3: Lấy thông tin người chơi đang nắm giữ lượt đi hiện tại
     public int getCurrentPlayer() {
         return currentPlayer;
     }
@@ -43,11 +44,13 @@ public class Board {
         return board.length;
     }
 
+    // UC-3.12, UC-3.35 (Trước khi phát triển): Đảo quyền đi qua lại giữa Người và Máy
+    // UC-3.36 (Trước khi phát triển): Đảo quyền đi qua lại giữa Người và Máy
     public void switchPlayer() {
         currentPlayer = (currentPlayer == BLACK) ? WHITE : BLACK;
     }
 
-    // Tra ve danh sach quan co bi lat
+    // UC-3.6, UC-3.9: Lấy danh sách chi tiết (tọa độ) các ô cờ sẽ bị lật
     public List<int[]> getFlippedCells(int row, int col, int player) {
         if (board[row][col] != EMPTY) return new ArrayList<>();
         List<int[]> flipped = new ArrayList<>();
@@ -70,17 +73,20 @@ public class Board {
         return flipped;
     }
 
-    // so luong quan co bi lat
+    // UC-3.5, UC-3.7, UC-3.31 (Trước khi phát triển): Tính toán số lượng quân cờ đối phương sẽ bị lật
+    // UC-3.33 (Sau khi phát triển): Tính toán số lượng quân cờ đối phương sẽ bị lật
     public int getFlippableCount(int row, int col, int player) {
         return getFlippedCells(row, col, player).size();
     }
 
     // UC-1.22 Kiểm tra nước đi tại vị trí row, col có hợp lệ với player không (cho các ô trống), UC 3 implement
+    // UC-3.4: Kiểm tra xem vị trí (row, col) có hợp lệ luật Othello không
     public boolean isValidMove(int row, int col, int player) {
         return getFlippableCount(row, col, player) > 0;
     }
 
-    // đặt quân cờ vào ô này
+    // UC-3.8, UC-3.21 (Trước khi phát triển), UC-3.32 (Trước khi phát triển): Thực hiện đặt cờ và lật các quân bị kẹp trên bàn cờ
+    // UC-3.22 (Sau khi phát triển), UC-3.34 (Sau khi phát triển): Thực hiện đặt cờ và lật các quân bị kẹp trên bàn cờ
     public boolean makeMove(int row, int col, int player) {
         List<int[]> flipped = getFlippedCells(row, col, player);
         if (flipped.isEmpty()) return false;
@@ -92,8 +98,8 @@ public class Board {
         return true;
     }
 
-    //UC-03: Kiểm tra nước đi tại vị trí row, col có hợp lệ với player không (UC3 implement)
-    // trả về danh sách các nước đi hợp lệ của người chơi
+    // UC-3.17, UC-3.19, UC-3.29 (Trước khi phát triển): Quét bàn cờ và lấy danh sách tất cả các vị trí đi hợp lệ
+    // UC-3.30 (Sau khi phát triển): Quét bàn cờ và lấy danh sách tất cả các vị trí đi hợp lệ
     public List<int[]> getValidMoves(int player) {
         List<int[]> moves = new ArrayList<>();
         for (int i = 0; i < 8; i++) {
@@ -107,11 +113,15 @@ public class Board {
     }
 
     // UC-03/UC-04: Kiểm tra game kết thúc
+    // UC-3.14, UC-3.37 (Trước khi phát triển): Kiểm tra điều kiện kết thúc ván (đầy bàn hoặc cả 2 mất lượt)
+    // UC-3.38 (Sau khi phát triển): Kiểm tra điều kiện kết thúc ván (đầy bàn hoặc cả 2 mất lượt)
     public boolean isGameOver() {
         return getValidMoves(BLACK).isEmpty() && getValidMoves(WHITE).isEmpty();
     }
 
     // UC-1.18/UC-04:Đếm và trả về số quân đen và trắng hiện tại trên bàn cờ
+    // UC-3.16, UC-3.24 (Trước khi phát triển): Tính toán và trả về mảng điểm số hiện tại của 2 bên
+    // UC-3.25 (Sau khi phát triển): Tính toán và trả về mảng điểm số hiện tại của 2 bên
     public int[] getScore() {
         int[] score = new int[2];
         int black = 0, white = 0;
@@ -126,7 +136,8 @@ public class Board {
         return score;
     }
 
-    // UC-03: Dùng để AI tính toán nước đi (copy bàn cờ)
+    // UC-3.20 (Trước khi phát triển): Sao chép trạng thái ma trận bàn cờ hiện tại sang một đối tượng Board độc lập để AI chạy thử giả định
+    // UC-3.21 (Sau khi phát triển): Sao chép trạng thái ma trận bàn cờ hiện tại sang một đối tượng Board độc lập để AI chạy thử giả định
     public Board copy() {
         Board copy = new Board();
         for (int i = 0; i < 8; i++) {
@@ -136,6 +147,8 @@ public class Board {
         return copy;
     }
 
+    // UC-3.25 (Trước khi phát triển): Đếm số lượng góc bàn cờ (Corner) đã chiếm giữ
+    // UC-3.26 (Sau khi phát triển): Đếm số lượng góc bàn cờ (Corner) đã chiếm giữ
     public int countCorner(Board board, int player) {
         int lastBoardPos = board.getLength() - 1;
         int count = 0;
@@ -146,6 +159,8 @@ public class Board {
         return count;
     }
 
+    // UC-3.26 (Trước khi phát triển): Đếm số lượng quân cờ nằm trên các cạnh (Edge)
+    // UC-3.27 (Sau khi phát triển): Đếm số lượng quân cờ nằm trên các cạnh (Edge)
     public int countEdge(Board board, int player) {
         int count = 0;
         int n = board.getLength() - 1;
@@ -158,6 +173,8 @@ public class Board {
         return count;
     }
 
+    // UC-3.27 (Trước khi phát triển): Đếm số lượng ô nguy hiểm X-Square (cạnh góc)
+    // UC-3.28 (Trước khi phát triển): Đếm số lượng ô nguy hiểm X-Square (cạnh góc)
     public int countXSquare(Board board, int player) {
         int count = 0;
         int n = board.getLength() - 1;
@@ -168,6 +185,8 @@ public class Board {
         return count;
     }
 
+    // UC-3.28 (Trước khi phát triển): Đếm số lượng ô nguy hiểm C-Square (kề góc)
+    // UC-3.29 (Sau khi phát triển): Đếm số lượng ô nguy hiểm C-Square (kề góc)
     public int countCSquare(Board board, int player) {
         int count = 0;
         int n = board.getLength() - 1;
