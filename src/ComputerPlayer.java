@@ -13,13 +13,15 @@ public class ComputerPlayer extends Player {
 
     @Override
     public void makeMove(Board board, MoveCallBack callBack) {
+    	// UC-03 (1.1.8): Gọi hàm tính toán của AI trên một Luồng riêng biệt (Background Thread) 
+        // để tránh làm treo giao diện.
         new Thread(() -> {
             Runtime rt = Runtime.getRuntime();
             rt.gc(); // dọn rác trước khi đo
 
             long memBefore = rt.totalMemory() - rt.freeMemory();
             long startTime = System.nanoTime();
-
+         // UC-03 (Luồng A2 - 1.3.1): Hệ thống kiểm tra danh sách nước đi hợp lệ của AI.
             List<int[]> validMoves = board.getValidMoves(color);
             if (validMoves.isEmpty()) {
                 callBack.onMove(-1, -1);
@@ -48,7 +50,7 @@ public class ComputerPlayer extends Player {
 
             System.out.println("Executed Time : " + timeMs + " ms");
             System.out.println("Memory Used   : " + memKB + " KB");
-
+         // UC-03 (1.1.9): AI tính toán xong, trả về tọa độ tốt nhất thông qua cơ chế MoveCallBack.
             callBack.onMove(bestMove[0], bestMove[1]);
         }).start();
     }

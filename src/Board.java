@@ -39,7 +39,7 @@ public class Board {
     public int getLength() {
         return board.length;
     }
-
+ // UC-03 (1.1.7): Hệ thống chuyển lượt
     public void switchPlayer() {
         currentPlayer = (currentPlayer == BLACK) ? WHITE : BLACK;
     }
@@ -72,12 +72,15 @@ public class Board {
         return getFlippedCells(row, col, player).size();
     }
 
+    // UC-03 (1.1.4): Hệ thống kiểm tra tính hợp lệ của ô người chơi click.
+    // UC-03 (Luồng A4 - 1.5.2): Nếu Player click sai ô, hàm này trả về false để từ chối nước đi.
     // Check xem có phải là một nước đi hơp lệ không
     public boolean isValidMove(int row, int col, int player) {
         return getFlippableCount(row, col, player) > 0;
     }
 
     // đặt quân cờ vào ô này
+    // UC-03 (1.1.5): Hệ thống đặt quân và lật (đổi màu) tất cả các quân đối phương bị kẹp.
     public boolean makeMove(int row, int col, int player) {
         List<int[]> flipped = getFlippedCells(row, col, player);
         if (flipped.isEmpty()) return false;
@@ -90,6 +93,7 @@ public class Board {
     }
 
     // trả về danh sách các nước đi hợp lệ của người chơi
+    // UC-03 (1.1.1): Hệ thống (Board) xác định danh sách các nước đi hợp lệ cho Player hiện tại.
     public List<int[]> getValidMoves(int player) {
         List<int[]> moves = new ArrayList<>();
         for (int i = 0; i < 8; i++) {
@@ -102,12 +106,12 @@ public class Board {
         return moves;
     }
 
-    // UC-03/UC-05: Kiểm tra game kết thúc
+    // UC-03 (Luồng A3 - 1.4.1) / UC-05: Kiểm tra xem cả hai bên có ai còn nước đi hay không để kết thúc game.
     public boolean isGameOver() {
         return getValidMoves(BLACK).isEmpty() && getValidMoves(WHITE).isEmpty();
     }
 
-    // UC-03/UC-05: Đếm điểm
+    
     public int[] getScore() {
         int[] score = new int[2];
         int black = 0, white = 0;

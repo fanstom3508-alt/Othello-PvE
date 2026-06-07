@@ -51,6 +51,9 @@ public class OthelloCell extends JPanel {
             g2d.setStroke(new BasicStroke(3.0f));
             g2d.drawOval(x, y, diameter, diameter);
         } else if (state == VALID_MOVE) {
+        	// UC-03 (1.1.2): Hệ thống hiển thị các lựa chọn khả dụng lên UI.
+            // Cập nhật các ô OthelloCell sang trạng thái VALID_MOVE 
+            // (Ví dụ: chấm tròn màu xanh lá mạ, viền cam).
             g2d.setColor(LIGHT_GREEN);
             g2d.fillOval(x, y, diameter, diameter);
             g2d.setColor(Color.ORANGE);

@@ -128,6 +128,7 @@ public class OthelloGame extends JFrame {
                     @Override
                     // UC-04
                     public void mouseClicked(MouseEvent e) {
+                    	// UC-03 (1.1.3): Player dùng chuột click vào một ô hợp lệ
                         handleMove(row, col);
                     }
                 });
@@ -203,7 +204,9 @@ public class OthelloGame extends JFrame {
     	// Chỉ kiểm tra kết thúc nếu game đã thực sự bắt đầu (có nhiều hơn 4 quân ban đầu)
     	int[] currentScore = board.getScore();
     	int totalPieces = currentScore[0] + currentScore[1];
+    	// UC-03 (1.4.1): Hệ thống kiểm tra hết cờ (isGameOver() == true)
         if (totalPieces > 4 && board.isGameOver()) {
+        	// UC-03 (1.4.2 & 1.4.3 - Luồng A3): Dừng Timer và chuyển sang UC Kết thúc ván đấu
         	endGame();
         	return;
         }
@@ -220,6 +223,7 @@ public class OthelloGame extends JFrame {
                 if (val != Board.EMPTY) {
                     cells[i][j].setState(val);
                 } else {
+                	// UC-03 (1.1.1 & 1.1.2): Hệ thống xác định danh sách hợp lệ và hiển thị lên UI trạng thái VALID_MOVE
                     cells[i][j].setState(board.isValidMove(i, j, current)
                         ? OthelloCell.VALID_MOVE : OthelloCell.EMPTY);
                 }
@@ -232,16 +236,20 @@ public class OthelloGame extends JFrame {
     private void handleMove(int row, int col) {
         if (gameEnded) return;
         int current = board.getCurrentPlayer();
+     // UC-03 (1.6.2 & 1.6.3 - Luồng A5): Kiểm tra lượt. Âm thầm bỏ qua thao tác khi chưa tới lượt (Click Spam)
         if (current == humanColor) {
+        	// UC-03 (1.1.4, 1.5.1 & 1.5.2 - Luồng A4): Hàm kiểm tra tính hợp lệ. Nếu false sẽ từ chối thao tác (1.5.3)
             if (board.isValidMove(row, col, current)) {
+            	// UC-03 (1.1.5): Tính toán lật (đổi màu) tất cả các quân đối phương bị kẹp
                 int flippedCount = board.getFlippableCount(row, col, current);
                 board.makeMove(row, col, current);
                 
-                // Cập nhật thông tin nước đi cuối
+             
+             // UC-03 (1.1.6): Cập nhật trạng thái Panel thông tin
                 lastMoveRow = row; lastMoveCol = col;
                 lastMoveFlipped = flippedCount; lastMovePlayer = current;
                 updateLastMoveLabels();
-                
+             // UC-03 (1.1.7): Hệ thống chuyển lượt và xóa highlight cũ (TurnBegin sẽ gọi updateBoard)
                 board.switchPlayer();
                 TurnBegin();
             }
@@ -259,10 +267,12 @@ public class OthelloGame extends JFrame {
         int curPlayer = board.getCurrentPlayer();
         Player player = (curPlayer == humanColor) ? humanPlayer : computerPlayer;
 
-        // Kiểm tra nếu người chơi hiện tại không còn nước đi
+     // UC-03 (1.2.1 & 1.3.1 - Luồng A1, A2): Nhận thấy Player/AI không có ô nào để đi
         if (board.getValidMoves(curPlayer).isEmpty()) {
             String who = (curPlayer == humanColor) ? "Bạn" : "Máy";
+         // UC-03 (1.2.2 & 1.3.2): Hiển thị hộp thoại cảnh báo chuyển lượt
             JOptionPane.showMessageDialog(this, who + " không còn nước đi, chuyển lượt!");
+         // UC-03 (1.2.3 & 1.3.3): Tự động bỏ qua lượt và chuyển cho đối phương
             board.switchPlayer();
             TurnBegin();
             return;
@@ -277,7 +287,8 @@ public class OthelloGame extends JFrame {
                         TurnBegin();
                         return;
                     }
-                    
+                    // UC-03 (1.1.9): AI tính toán xong, trả về tọa độ.
+                    // UC-03 (1.1.10): Hệ thống tiếp nhận, thực hiện đặt quân và lật quân cho AI
                     int flippedCount = board.getFlippableCount(row, col, curPlayer);
                     board.makeMove(row, col, curPlayer);
                     
@@ -286,7 +297,9 @@ public class OthelloGame extends JFrame {
                     lastMoveFlipped = flippedCount; lastMovePlayer = curPlayer;
                     
                     // Dùng SwingUtilities để update UI từ thread AI
+                    // UC-03 (1.1.10): Đồng bộ lại lên luồng giao diện chính
                     SwingUtilities.invokeLater(() -> {
+                    	// UC-03 (1.1.11): Cập nhật lại UI Panel báo cáo nước đi của AI, chuyển lượt lại cho Player
                         updateLastMoveLabels();
                         board.switchPlayer();
                         TurnBegin();
@@ -295,6 +308,7 @@ public class OthelloGame extends JFrame {
             };
             
             // Thêm delay 1 giây để người chơi kịp quan sát trước khi Máy đi
+            // UC-03 (1.1.8): Thiết lập delay 1 giây và gọi AI tính toán trên luồng riêng
             Timer aiDelay = new Timer(1000, e -> player.makeMove(board, callback));
             aiDelay.setRepeats(false);
             aiDelay.start();
