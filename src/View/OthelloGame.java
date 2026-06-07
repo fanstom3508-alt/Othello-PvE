@@ -33,14 +33,13 @@ public class OthelloGame extends JFrame {
     // UC-05: Tên người chơi dùng để highlight leaderboard
     private String playerName = "Player";
     private boolean gameEnded = false;
-
     public OthelloGame(int chosenHumanColor) {
         board = new Board();
         setTitle("Cờ Othello - Người vs Máy");
         setSize(650, 750);
         
         // [7.1.0]: Đóng bằng nút X cũng kích hoạt dispose → windowClosed → MainMenu
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         setLayout(new BorderLayout());
         setLocationRelativeTo(null);
 
@@ -63,13 +62,48 @@ public class OthelloGame extends JFrame {
         createBoardPanel();
         restartGame();
 
-        // [7.1.0]: Khi đóng cửa sổ game, hiện lại MainMenu
+//        // [7.1.0]: Khi đóng cửa sổ game, hiện lại MainMenu
+//        addWindowListener(new WindowAdapter() {
+//            @Override
+//            public void windowClosed(WindowEvent e) {
+//                SwingUtilities.invokeLater(() -> new MainMenu().setVisible(true));
+//            }
+//        });
+//    }
+     // UC-07: Bắt sự kiện bấm nút X trên thanh tiêu đề của Frame
         addWindowListener(new WindowAdapter() {
             @Override
-            public void windowClosed(WindowEvent e) {
-                SwingUtilities.invokeLater(() -> new MainMenu().setVisible(true));
+            public void windowClosing(WindowEvent e) {
+                // Nếu trận đấu đã kết thúc rồi (gameEnded == true) thì đóng thẳng không cần hỏi
+                if (gameEnded) {
+                    closeGameAndReturnMenu();
+                    return;
+                }
+
+                // 7.1.1: Hiển thị hộp thoại xác nhận (BR-04) khi game đang chạy
+                int confirm = JOptionPane.showConfirmDialog(
+                    OthelloGame.this,
+                    "Bạn có chắc muốn thoát ván đấu hiện tại?\nKết quả sẽ không được lưu.",
+                    "Xác nhận thoát trận",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.WARNING_MESSAGE
+                );
+
+                // 7.1.2: Nếu Player chọn "Có" (YES_OPTION)
+                if (confirm == JOptionPane.YES_OPTION) {
+                    closeGameAndReturnMenu();
+                }
+                // 7.2.1: Nếu chọn "Không" -> Hủy thoát, tiếp tục ván đấu (Không làm gì cả)
             }
         });
+    }
+ // Hàm bổ trợ gom nhóm xử lý dừng game và giải phóng giao diện
+    private void closeGameAndReturnMenu() {
+        if (turnTimer != null && turnTimer.isRunning()) {
+            turnTimer.stop();
+        }
+        dispose(); // Đóng màn hình game hiện tại
+        SwingUtilities.invokeLater(() -> new MainMenu().setVisible(true)); // Mở lại menu chính
     }
 
     // UC-1.9, UC-1.26, UC-1.19: Trả về tên hiển thị của người chơi theo màu quân (Bạn hoặc Máy)
