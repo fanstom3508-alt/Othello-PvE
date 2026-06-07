@@ -33,3 +33,8 @@ ehthumbs.db
 *.jar
 *.war
 *.ear
+
+# =========================
+# File dữ liệu local lưu điểm cao
+# =========================
+highscores.dat
