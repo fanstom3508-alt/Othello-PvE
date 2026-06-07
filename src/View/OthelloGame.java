@@ -302,8 +302,14 @@ public class OthelloGame extends JFrame {
         }
     }
 
-    // UC-3.13, UC-3.36: Hàm bản lề điều phối vòng lặp, kiểm tra trạng thái bàn cờ và kích hoạt lượt AI
-    // 23130186_TranLeMinhMan_CapNhatThem
+    // UC-3.13, UC-3.36 (Trước khi phát triển): Hàm bản lề điều phối vòng lặp, kiểm tra trạng thái bàn cờ và kích hoạt lượt AI
+    // 23130186_TranLeMinhMan_CapNhatThem UC-3.37 (Sau khi phát triển)
+    	/* Điểm khác biệt & Cải tiến cốt lõi:
+        * 1. Tối ưu NFR-01 (Zero Artificial Delay): Loại bỏ Timer tạo trễ 1 giây cũ, nhường trọn vẹn quỹ thời gian cho AI suy nghĩ thực tế.
+        * 2. Non-blocking UI: Kích hoạt AI đánh cờ qua cơ chế Callback ngầm, giúp giao diện Swing không bị đóng băng khi tới lượt Máy.
+        * 3. An toàn luồng (Thread-Safety): Sử dụng `SwingUtilities.invokeLater()` để hứng kết quả từ Thread ngầm, đảm bảo an toàn tuyệt đối khi vẽ lại giao diện (EDT).
+        * 4. Tự động hóa trạng thái: Tự động kiểm tra Game Over, hoặc tự động ép qua lượt (pass lượt) nếu một bên không còn nước đi hợp lệ.
+        */
     private void TurnBegin() {
         if (board.isGameOver()) {
             updateBoard(); // Cập nhật lần cuối để hiện kết quả
@@ -374,7 +380,7 @@ public class OthelloGame extends JFrame {
                 public void onMove(int row, int col) {
                     // Lệnh này đang nằm trên luồng ngầm (AI Thread).
                     // Bắt buộc đẩy về luồng UI (Event Dispatch Thread) để không bị crash giao diện.
-                	// UC-3.33: Bọc tác vụ thay đổi UI để trả quyền điều khiển về luồng UI chính
+                	// UC-3.32 (Sau khi phát triển): Bọc tác vụ thay đổi UI để trả quyền điều khiển về luồng UI chính
                     SwingUtilities.invokeLater(() -> {
                         if (row != -1 && col != -1) {
                             // Lưu trạng thái nước đi cuối cùng
@@ -400,7 +406,8 @@ public class OthelloGame extends JFrame {
     }
 
     // UC-1.15: Cập nhật nhãn hiển thị vị trí nước vừa đi và số quân ăn được
-    // UC-3.10, UC-3.34: Cập nhật giao diện hiển thị thông tin nước đi cuối cùng
+    // UC-3.10, UC-3.34 (Trước khi phát triển) : Cập nhật giao diện hiển thị thông tin nước đi cuối cùng
+    // UC-3.35 (Trước khi phát triển) : Cập nhật giao diện hiển thị thông tin nước đi cuối cùng
     private void updateLastMoveLabels() {
         Font labelFont = new Font("Arial", Font.BOLD, 16);
         lastMoveLabel.setFont(labelFont);

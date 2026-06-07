@@ -18,7 +18,7 @@ public class ComputerPlayer extends Player {
     private final int Pos_Infinity = 99999999;
     private final int Neg_Infinity = -99999999;
     
-    // [23130186_TranLeMinhMan_Thêm Mới] Hàm thực hiện tìm kiếm và trả về nước đi tốt nhất tại một độ sâu cụ thể
+    // [23130186_TranLeMinhMan_Thêm Mới] UC-3.20 Hàm thực hiện tìm kiếm và trả về nước đi tốt nhất tại một độ sâu cụ thể
     // [23130186_TranLeMinhMan_Cập nhật] Thêm tham số long startTimeMs
     	private int[] searchAtDepth(Board board, int depth, List<int[]> validMoves, long startTimeMs) {
         int bestValue = Neg_Infinity; // Khởi tạo giá trị tệ nhất
@@ -41,8 +41,16 @@ public class ComputerPlayer extends Player {
         return bestMove;
     }
 
-    // UC-3.18: Kích hoạt luồng Thread ngầm tính toán nước đi cho Máy
+    // UC-3.18 : Kích hoạt luồng Thread ngầm tính toán nước đi cho Máy
     // 23130186_TranLeMinhMan_CapNhatThem
+    	/**
+         * Điểm khác biệt & Cải tiến cốt lõi:
+         * 1. Threading: Chạy trên luồng ngầm (Asynchronous) giúp không bị treo giao diện (UI).
+         * 2. Iterative Deepening: Đào sâu lặp dần (từ d=1 đến MAXDEPTH) thay vì chốt chết 1 độ sâu.
+         * 3. Timeout Handling: Bắt exception ngắt đệ quy khẩn cấp nếu tính toán vượt 1.8s (Đảm bảo NFR-01).
+         * 4. Fallback: Tự động dùng `bestMoveSoFar` (nước đi an toàn gần nhất) nếu bị hết giờ.
+         * 5. Profiling: Đo lường RAM, thời gian thực thi (ms) và in log thống kê chi tiết.
+         */
     @Override
     public void makeMove(Board board, MoveCallBack callBack) {
         new Thread(() -> {
@@ -170,8 +178,8 @@ public class ComputerPlayer extends Player {
         }
     }
 
-    // UC-3.22: Thuật toán Alpha-Beta Pruning tìm độ sâu tối ưu
-    // [23130186_TranLeMinhMan_Cập nhật] Thêm tham số long startTimeMs
+    // UC-3.22 (Trước khi phát triển): Thuật toán Alpha-Beta Pruning tìm độ sâu tối ưu
+    // [23130186_TranLeMinhMan_Cập nhật] (Sau khi phát triển) UC-3.23: Thêm tham số long startTimeMs
     public int alphaBeta(boolean maxmin, Node state, int depth, int alpha, int beta, long startTimeMs) {
     	// [23130186_TranLeMinhMan_Cập nhật] KIỂM TRA THỜI GIAN: Nếu lố 1800ms (1.8s) thì ném lỗi ngắt ngay lập tức
     	if (System.currentTimeMillis() - startTimeMs > 1800) {
@@ -230,7 +238,8 @@ public class ComputerPlayer extends Player {
         return this.color == Board.WHITE ? Board.BLACK : Board.WHITE;
     }
 
-    // UC-3.23: Hàm lượng giá đánh giá mức độ lợi thế của trạng thái bàn cờ
+    // UC-3.23 (Trước khi phát triển): Hàm lượng giá đánh giá mức độ lợi thế của trạng thái bàn cờ
+    // UC-3.24 (Sau khi phát triển): Hàm lượng giá đánh giá mức độ lợi thế của trạng thái bàn cờ
     private int heuristic(Node state) {
         Board board = state.getBoard();
         int[] score = board.getScore();
