@@ -53,7 +53,7 @@ public class ComputerPlayerTest {
     void minimax_DepthZero_ReturnsHeuristicValue() {
         Node node = new Node(board, new int[]{2, 3}, Board.BLACK);
         // depth=0 → trả về heuristic ngay, không đệ quy
-        int val = aiBlack.minimax(true, node, 0);
+        int val = aiBlack.minimax(true, node, 0, startTimeMs);
         // Chỉ cần không throw exception và trả về số nguyên hợp lệ
         assertTrue(val > Integer.MIN_VALUE && val < Integer.MAX_VALUE);
     }
@@ -62,8 +62,8 @@ public class ComputerPlayerTest {
     @DisplayName("minimax: các depth khác nhau đều trả về giá trị hợp lệ")
     void minimax_DifferentDepthsValidValues() {
         Node node = new Node(board, new int[]{2, 3}, Board.BLACK);
-        int val1 = aiBlack.minimax(true, node, 1);
-        int val2 = aiBlack.minimax(true, node, 2);
+        int val1 = aiBlack.minimax(true, node, 1, startTimeMs);
+        int val2 = aiBlack.minimax(true, node, 2, startTimeMs);
         assertTrue(val1 > Integer.MIN_VALUE && val1 < Integer.MAX_VALUE);
         assertTrue(val2 > Integer.MIN_VALUE && val2 < Integer.MAX_VALUE);
     }
@@ -77,7 +77,7 @@ public class ComputerPlayerTest {
             for (int j = 0; j < 8; j++)
                 setCell(fullBoard, i, j, Board.BLACK);
         Node node = new Node(fullBoard, new int[]{0, 0}, Board.BLACK);
-        int val = aiBlack.minimax(true, node, 5);
+        int val = aiBlack.minimax(true, node, 5, startTimeMs);
         assertTrue(val > Integer.MIN_VALUE && val < Integer.MAX_VALUE, "Phải trả về heuristic khi game over");
     }
  
@@ -89,7 +89,7 @@ public class ComputerPlayerTest {
         if (b == null) return; // bỏ qua nếu không setup được
         Node node = new Node(b, new int[]{0, 0}, Board.WHITE);
         // Không được throw exception
-        assertDoesNotThrow(() -> aiWhite.minimax(true, node, 2));
+        assertDoesNotThrow(() -> aiWhite.minimax(true, node, 2, startTimeMs));
     }
  
     // alphaBeta()
@@ -109,7 +109,7 @@ public class ComputerPlayerTest {
         long startTimeMs = System.currentTimeMillis();
         
         Node node = new Node(board, new int[]{2, 3}, Board.BLACK);
-        int minimaxVal = aiBlack.minimax(true, node, 3);
+        int minimaxVal = aiBlack.minimax(true, node, 3, startTimeMs);
         int alphaBetaVal = aiBlack.alphaBeta(true, node, 3, -99999999, 99999999, startTimeMs);
         assertEquals(minimaxVal, alphaBetaVal,
             "alphaBeta và minimax phải cho cùng kết quả (alphaBeta chỉ tối ưu tốc độ)");
