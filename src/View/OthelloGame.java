@@ -6,7 +6,7 @@ import Controller.ComputerPlayer;
 import Controller.GameSession;
 import Controller.HumanPlayer;
 import Controller.MoveCallBack;
-import Controller.Player;
+import Controller.Player;	
 import Model.Board;
 import Model.HighScoreManager;
 
@@ -70,6 +70,9 @@ public class OthelloGame extends JFrame {
         });
     }
 
+
+    // UC-1.9, UC-1.26, UC-1.19: Trả về tên hiển thị của người chơi theo màu quân (Bạn hoặc Máy)
+    // UC-3.11: Lấy tên hiển thị của người chơi dựa trên ID (màu cờ)
     private String getPlayerName(int color) {
         if (color == humanColor) {
             return (color == Board.BLACK) ? "Đen (Bạn)" : "Trắng (Bạn)";
@@ -163,7 +166,7 @@ public class OthelloGame extends JFrame {
                 final int row = i, col = j;
                 cell.addMouseListener(new MouseAdapter() {
                     @Override
-                    // UC-03
+                    // UC-3.1: Bắt sự kiện click chuột của người chơi trên bàn cờ (boardPanel)
                     public void mouseClicked(MouseEvent e) {
                         handleMove(row, col);
                     }
@@ -243,6 +246,7 @@ public class OthelloGame extends JFrame {
     }
 
     // UC-1.16: Vẽ lại toàn bộ bàn cờ, cập nhật trạng thái từng ô và highlight ô hợp lệ
+    // UC-3.15: Cập nhật lại toàn bộ giao diện (lật cờ) và điểm số trên màn hình
     private void updateBoard() {
         // UC-04 bổ sung thêm
 
@@ -275,7 +279,7 @@ public class OthelloGame extends JFrame {
         }
     }
 
-    // UC-03: Thực hiện nước đi
+    // UC-3.2: Hàm chính xử lý logic nước đi sau khi người chơi click
 
     private void handleMove(int row, int col) {
         if (gameEnded)
@@ -299,6 +303,14 @@ public class OthelloGame extends JFrame {
         }
     }
 
+    // UC-3.13, UC-3.36 (Trước khi phát triển): Hàm bản lề điều phối vòng lặp, kiểm tra trạng thái bàn cờ và kích hoạt lượt AI
+    // 23130186_TranLeMinhMan_CapNhatThem UC-3.37 (Sau khi phát triển)
+    	/* Điểm khác biệt & Cải tiến cốt lõi:
+        * 1. Tối ưu NFR-01 (Zero Artificial Delay): Loại bỏ Timer tạo trễ 1 giây cũ, nhường trọn vẹn quỹ thời gian cho AI suy nghĩ thực tế.
+        * 2. Non-blocking UI: Kích hoạt AI đánh cờ qua cơ chế Callback ngầm, giúp giao diện Swing không bị đóng băng khi tới lượt Máy.
+        * 3. An toàn luồng (Thread-Safety): Sử dụng `SwingUtilities.invokeLater()` để hứng kết quả từ Thread ngầm, đảm bảo an toàn tuyệt đối khi vẽ lại giao diện (EDT).
+        * 4. Tự động hóa trạng thái: Tự động kiểm tra Game Over, hoặc tự động ép qua lượt (pass lượt) nếu một bên không còn nước đi hợp lệ.
+        */
     private void TurnBegin() {
         if (board.isGameOver()) {
             updateBoard(); // Cập nhật lần cuối để hiện kết quả
@@ -306,55 +318,97 @@ public class OthelloGame extends JFrame {
         }
 
         updateBoard();
-
+//	code người cũ
+//        int curPlayer = board.getCurrentPlayer();
+//        List<int[]> validMoves = board.getValidMoves(curPlayer);
+//
+//        // Kiểm tra nếu người chơi hiện tại không còn nước đi
+//        if (validMoves.isEmpty()) {
+//            String who = (curPlayer == humanColor) ? "Bạn" : "Máy";
+//            JOptionPane.showMessageDialog(this, who + " không còn nước đi, chuyển lượt!");
+//            board.switchPlayer();
+//            TurnBegin();
+//            return;
+//        }
+//
+//        // Kiểm tra lượt AI
+//        if (curPlayer == computerPlayer.getColor()) { 
+//            computerPlayer.makeMove(board, new MoveCallBack() {
+//                @Override
+//             // UC-3.30: Callback nhận tọa độ tối ưu từ luồng AI trả về để tiến hành thực thi lên giao diện
+//                public void onMove(int row, int col) {
+//                    // Lệnh này đang nằm trên luồng ngầm (AI Thread).
+//                    // Bắt buộc đẩy về luồng UI (Event Dispatch Thread) để không bị crash giao diện.
+//                	// UC-3.33: Bọc tác vụ thay đổi UI để trả quyền điều khiển về luồng UI chính
+//                    SwingUtilities.invokeLater(() -> {
+//                        if (row != -1 && col != -1) {
+//                            // Lưu trạng thái nước đi cuối cùng
+//                            lastMoveRow = row;
+//                            lastMoveCol = col;
+//                            lastMovePlayer = curPlayer;
+//                            lastMoveFlipped = board.getFlippableCount(row, col, curPlayer);         
+//                            
+//                            // Thực hiện đặt cờ lên bàn cờ thật
+//                            board.makeMove(row, col, curPlayer);
+//                        }
+//                        // Cập nhật nhãn lịch sử đi cờ
+//                        updateLastMoveLabels();
+//                        
+//                        // Đổi phiên và bắt đầu lại vòng lặp cho Người
+//                        board.switchPlayer();
+//                        TurnBegin(); 
+//                    });
+//                }
+//            });
+//        }
+        // 23130186_TranLeMinhMan_CapNhatThem
         int curPlayer = board.getCurrentPlayer();
-        Player player = (curPlayer == humanColor) ? humanPlayer : computerPlayer;
+        List<int[]> validMoves = board.getValidMoves(curPlayer);
 
-        // Kiểm tra nếu người chơi hiện tại không còn nước đi
-        if (board.getValidMoves(curPlayer).isEmpty()) {
-            String who = (curPlayer == humanColor) ? "Bạn" : "Máy";
-            JOptionPane.showMessageDialog(this, who + " không còn nước đi, chuyển lượt!");
+        // Xử lý mất lượt
+        if (validMoves.isEmpty()) {
+            // (Tùy chọn: Hiện thông báo Toast/Dialog mất lượt tại đây)
             board.switchPlayer();
-            TurnBegin();
+            TurnBegin(); // Gọi đệ quy nhường lượt
             return;
         }
+        // Kiểm tra lượt AI
 
-        if (player instanceof ComputerPlayer) {
-            MoveCallBack callback = new MoveCallBack() {
+        if (curPlayer == computerPlayer.getColor()) { 
+            computerPlayer.makeMove(board, new MoveCallBack() {
                 @Override
+             // UC-3.30: Callback nhận tọa độ tối ưu từ luồng AI trả về để tiến hành thực thi lên giao diện
                 public void onMove(int row, int col) {
-                    if (row == -1 && col == -1) { // Máy pass (dù đã check ở trên nhưng dự phòng)
-                        board.switchPlayer();
-                        TurnBegin();
-                        return;
-                    }
-
-                    int flippedCount = board.getFlippableCount(row, col, curPlayer);
-                    board.makeMove(row, col, curPlayer);
-
-                    // Cập nhật thông tin nước đi cuối
-                    lastMoveRow = row;
-                    lastMoveCol = col;
-                    lastMoveFlipped = flippedCount;
-                    lastMovePlayer = curPlayer;
-
-                    // Dùng SwingUtilities để update UI từ thread AI
+                    // Lệnh này đang nằm trên luồng ngầm (AI Thread).
+                    // Bắt buộc đẩy về luồng UI (Event Dispatch Thread) để không bị crash giao diện.
+                	// UC-3.32 (Sau khi phát triển): Bọc tác vụ thay đổi UI để trả quyền điều khiển về luồng UI chính
                     SwingUtilities.invokeLater(() -> {
+                        if (row != -1 && col != -1) {
+                            // Lưu trạng thái nước đi cuối cùng
+                            lastMoveRow = row;
+                            lastMoveCol = col;
+                            lastMovePlayer = curPlayer;
+                            lastMoveFlipped = board.getFlippableCount(row, col, curPlayer);         
+                          
+                            // Thực hiện đặt cờ lên bàn cờ thật
+                            board.makeMove(row, col, curPlayer);
+                        }
+
+                        // Cập nhật nhãn lịch sử đi cờ
                         updateLastMoveLabels();
+                    
+                        // Đổi phiên và bắt đầu lại vòng lặp cho Người
                         board.switchPlayer();
-                        TurnBegin();
+                        TurnBegin(); 
                     });
                 }
-            };
-
-            // Thêm delay 1 giây để người chơi kịp quan sát trước khi Máy đi
-            Timer aiDelay = new Timer(1000, e -> player.makeMove(board, callback));
-            aiDelay.setRepeats(false);
-            aiDelay.start();
+            });
         }
     }
 
     // UC-1.15: Cập nhật nhãn hiển thị vị trí nước vừa đi và số quân ăn được
+    // UC-3.10, UC-3.34 (Trước khi phát triển) : Cập nhật giao diện hiển thị thông tin nước đi cuối cùng
+    // UC-3.35 (Trước khi phát triển) : Cập nhật giao diện hiển thị thông tin nước đi cuối cùng
     private void updateLastMoveLabels() {
         Font labelFont = new Font("Arial", Font.BOLD, 16);
         lastMoveLabel.setFont(labelFont);
