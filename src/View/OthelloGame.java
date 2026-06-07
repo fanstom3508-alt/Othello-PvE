@@ -303,7 +303,6 @@ public class OthelloGame extends JFrame {
     }
 
     // UC-3.13, UC-3.36: Hàm bản lề điều phối vòng lặp, kiểm tra trạng thái bàn cờ và kích hoạt lượt AI
-    
     private void TurnBegin() {
         if (board.isGameOver()) {
             updateBoard(); // Cập nhật lần cuối để hiện kết quả
@@ -311,52 +310,91 @@ public class OthelloGame extends JFrame {
         }
 
         updateBoard();
-
+//	code người cũ
+//        int curPlayer = board.getCurrentPlayer();
+//        List<int[]> validMoves = board.getValidMoves(curPlayer);
+//
+//        // Kiểm tra nếu người chơi hiện tại không còn nước đi
+//        if (validMoves.isEmpty()) {
+//            String who = (curPlayer == humanColor) ? "Bạn" : "Máy";
+//            JOptionPane.showMessageDialog(this, who + " không còn nước đi, chuyển lượt!");
+//            board.switchPlayer();
+//            TurnBegin();
+//            return;
+//        }
+//
+//        // Kiểm tra lượt AI
+//        if (curPlayer == computerPlayer.getColor()) { 
+//            computerPlayer.makeMove(board, new MoveCallBack() {
+//                @Override
+//             // UC-3.30: Callback nhận tọa độ tối ưu từ luồng AI trả về để tiến hành thực thi lên giao diện
+//                public void onMove(int row, int col) {
+//                    // Lệnh này đang nằm trên luồng ngầm (AI Thread).
+//                    // Bắt buộc đẩy về luồng UI (Event Dispatch Thread) để không bị crash giao diện.
+//                	// UC-3.33: Bọc tác vụ thay đổi UI để trả quyền điều khiển về luồng UI chính
+//                    SwingUtilities.invokeLater(() -> {
+//                        if (row != -1 && col != -1) {
+//                            // Lưu trạng thái nước đi cuối cùng
+//                            lastMoveRow = row;
+//                            lastMoveCol = col;
+//                            lastMovePlayer = curPlayer;
+//                            lastMoveFlipped = board.getFlippableCount(row, col, curPlayer);         
+//                            
+//                            // Thực hiện đặt cờ lên bàn cờ thật
+//                            board.makeMove(row, col, curPlayer);
+//                        }
+//                        // Cập nhật nhãn lịch sử đi cờ
+//                        updateLastMoveLabels();
+//                        
+//                        // Đổi phiên và bắt đầu lại vòng lặp cho Người
+//                        board.switchPlayer();
+//                        TurnBegin(); 
+//                    });
+//                }
+//            });
+//        }
+        // 23130186_TranLeMinhMan_CapNhatThem
         int curPlayer = board.getCurrentPlayer();
-        Player player = (curPlayer == humanColor) ? humanPlayer : computerPlayer;
+        List<int[]> validMoves = board.getValidMoves(curPlayer);
 
-        // Kiểm tra nếu người chơi hiện tại không còn nước đi
-        if (board.getValidMoves(curPlayer).isEmpty()) {
-            String who = (curPlayer == humanColor) ? "Bạn" : "Máy";
-            JOptionPane.showMessageDialog(this, who + " không còn nước đi, chuyển lượt!");
+        // Xử lý mất lượt
+        if (validMoves.isEmpty()) {
+            // (Tùy chọn: Hiện thông báo Toast/Dialog mất lượt tại đây)
             board.switchPlayer();
-            TurnBegin();
+            TurnBegin(); // Gọi đệ quy nhường lượt
             return;
         }
+        // Kiểm tra lượt AI
 
-        if (player instanceof ComputerPlayer) {
-            MoveCallBack callback = new MoveCallBack() {
+        if (curPlayer == computerPlayer.getColor()) { 
+            computerPlayer.makeMove(board, new MoveCallBack() {
                 @Override
-                // UC-3.23: Callback nhận tọa độ tối ưu từ luồng AI trả về để tiến hành thực thi lên giao diện
+             // UC-3.30: Callback nhận tọa độ tối ưu từ luồng AI trả về để tiến hành thực thi lên giao diện
                 public void onMove(int row, int col) {
-                    if (row == -1 && col == -1) { // Máy pass (dù đã check ở trên nhưng dự phòng)
-                        board.switchPlayer();
-                        TurnBegin();
-                        return;
-                    }
-
-                    int flippedCount = board.getFlippableCount(row, col, curPlayer);
-                    board.makeMove(row, col, curPlayer);
-
-                    // Cập nhật thông tin nước đi cuối
-                    lastMoveRow = row;
-                    lastMoveCol = col;
-                    lastMoveFlipped = flippedCount;
-                    lastMovePlayer = curPlayer;
-
-                 // UC-3.33: Bọc tác vụ thay đổi UI để trả quyền điều khiển về luồng UI chính
+                    // Lệnh này đang nằm trên luồng ngầm (AI Thread).
+                    // Bắt buộc đẩy về luồng UI (Event Dispatch Thread) để không bị crash giao diện.
+                	// UC-3.33: Bọc tác vụ thay đổi UI để trả quyền điều khiển về luồng UI chính
                     SwingUtilities.invokeLater(() -> {
+                        if (row != -1 && col != -1) {
+                            // Lưu trạng thái nước đi cuối cùng
+                            lastMoveRow = row;
+                            lastMoveCol = col;
+                            lastMovePlayer = curPlayer;
+                            lastMoveFlipped = board.getFlippableCount(row, col, curPlayer);         
+                          
+                            // Thực hiện đặt cờ lên bàn cờ thật
+                            board.makeMove(row, col, curPlayer);
+                        }
+
+                        // Cập nhật nhãn lịch sử đi cờ
                         updateLastMoveLabels();
+                    
+                        // Đổi phiên và bắt đầu lại vòng lặp cho Người
                         board.switchPlayer();
-                        TurnBegin();
+                        TurnBegin(); 
                     });
                 }
-            };
-
-            // Thêm delay 1 giây để người chơi kịp quan sát trước khi Máy đi
-            Timer aiDelay = new Timer(1000, e -> player.makeMove(board, callback));
-            aiDelay.setRepeats(false);
-            aiDelay.start();
+            });
         }
     }
 
