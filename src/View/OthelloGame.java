@@ -6,7 +6,7 @@ import Controller.ComputerPlayer;
 import Controller.GameSession;
 import Controller.HumanPlayer;
 import Controller.MoveCallBack;
-import Controller.Player;
+import Controller.Player;	
 import Model.Board;
 import Model.HighScoreManager;
 
