@@ -42,6 +42,7 @@ public class ComputerPlayer extends Player {
     }
 
     // UC-3.18: Kích hoạt luồng Thread ngầm tính toán nước đi cho Máy
+    // 23130186_TranLeMinhMan_CapNhatThem
     @Override
     public void makeMove(Board board, MoveCallBack callBack) {
         new Thread(() -> {
@@ -80,6 +81,7 @@ public class ComputerPlayer extends Player {
              * [23130186_TranLeMinhMan_Thêm Mới] Code được phát triển tiếp 
              */
             int[] bestMoveSoFar = validMoves.get(0); // Khởi tạo mốc lưu trữ nước đi tốt nhất
+            int actualDepthReached = 0; // [Thêm mới] Biến lưu lại độ sâu lớn nhất đã hoàn thành
 
             //[23130186_TranLeMinhMan_Thêm Mới] Bắt ngoại lệ TimeoutException hoặc xử lý flag dừng ở hàm makeMove
             try {
@@ -92,6 +94,7 @@ public class ComputerPlayer extends Player {
 	            	// Chỉ khi tìm kiếm TRỌN VẸN độ sâu 'd' mà không bị ngắt, lệnh gán này mới được chạy
 	                if (currentBestMove != null) {
 	                    bestMoveSoFar = currentBestMove;
+	                    actualDepthReached = d; // Cập nhật độ sâu thực tế đã hoàn thành trọn vẹn
 	                }
 	                
 	                // In ra để thấy AI đang đào sâu dần
@@ -100,8 +103,7 @@ public class ComputerPlayer extends Player {
             } catch (SearchTimeoutException e) {
                 // Đã bị ngắt do lố 1.8 giây!
                 // Vòng lặp for bị phá vỡ ngay lập tức. Các hàm đệ quy sâu bên trong đều dừng lại.
-                System.out.println("Timeout Đã quá 1.8 giây! Dừng khẩn cấp thuật toán đệ quy.");
-                System.out.println("Đang lấy kết quả tốt nhất từ độ sâu hoàn thành gần nhất để đánh");
+                System.out.println("Timeout Đã quá 1.8 giây! Dừng khẩn cấp thuật toán đệ quy, lấy kết quả tốt nhất để đánh");
             }
 
             // Đánh dấu thời gian, bộ nhớ kết thúc và in ra kết quả
@@ -110,9 +112,15 @@ public class ComputerPlayer extends Player {
 
             long timeMs = (endTime - startTime) / 1_000_000;
             long memKB = (memAfter - memBefore) / 1024;
-
-            System.out.println("Executed Time : " + timeMs + " ms");
-            System.out.println("Memory Used   : " + memKB + " KB");
+            
+            // log để xem hiệu suất chính xác
+            System.out.println("\n THỐNG KÊ LƯỢT ĐI CỦA AI");
+            System.out.println("Nhánh AI màu cờ : " + (color == Board.BLACK ? "Đen (1)" : "Trắng (2)"));
+            System.out.println("AI chốt nước đi : (" + bestMoveSoFar[0] + ", " + bestMoveSoFar[1] + ")");
+            System.out.println("Đạt tới độ sâu  : " + actualDepthReached + " (Max: " + MAXDEPTH + ")");
+            System.out.println("Thời gian xử lý : " + timeMs + " ms");
+            System.out.println("Bộ nhớ sử dụng  : " + memKB + " KB");
+            System.out.println("\n");
 
             // Gửi kết quả tốt nhất cuối cùng thu được cho UI
             callBack.onMove(bestMoveSoFar[0], bestMoveSoFar[1]);
@@ -157,7 +165,7 @@ public class ComputerPlayer extends Player {
         }
     }
 
-    // UC-3.22: Thuật toán Minimax kết hợp Alpha-Beta Pruning tìm độ sâu tối ưu
+    // UC-3.22: Thuật toán Alpha-Beta Pruning tìm độ sâu tối ưu
     // [23130186_TranLeMinhMan_Cập nhật] Thêm tham số long startTimeMs
     public int alphaBeta(boolean maxmin, Node state, int depth, int alpha, int beta, long startTimeMs) {
     	// [23130186_TranLeMinhMan_Cập nhật] KIỂM TRA THỜI GIAN: Nếu lố 1800ms (1.8s) thì ném lỗi ngắt ngay lập tức

@@ -303,6 +303,7 @@ public class OthelloGame extends JFrame {
     }
 
     // UC-3.13, UC-3.36: Hàm bản lề điều phối vòng lặp, kiểm tra trạng thái bàn cờ và kích hoạt lượt AI
+    // 23130186_TranLeMinhMan_CapNhatThem
     private void TurnBegin() {
         if (board.isGameOver()) {
             updateBoard(); // Cập nhật lần cuối để hiện kết quả
